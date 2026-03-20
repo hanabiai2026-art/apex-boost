@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ApexBoost – Online Game Boost &amp; Rank Up Services</title>
+<style>
+/* ── Reset ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--surface:#111;--card:#161616;--border:#222;
+  --green:#39d353;--green-dim:#2aa040;--green-glow:rgba(57,211,83,.22);
+  --text:#f0f0f0;--muted:#888;--red:#e05050;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{text-decoration:none;color:inherit}
+ul{list-style:none}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--green);border-radius:3px}
+
+/* ── Pages ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:12px 26px;border-radius:5px;border:none;
+  font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.4px;transition:filter .2s,transform .15s}
+.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn-green{background:var(--green);color:#000}
+.btn-outline{background:transparent;border:1.5px solid var(--green);color:var(--green)}
+.btn-outline:hover{background:var(--green);color:#000}
+.btn-red{background:var(--red);color:#fff}
+.btn-sm{padding:8px 16px;font-size:12px}
+.btn-full{width:100%;justify-content:center;margin-top:12px}
+.btn-lg{padding:16px 40px;font-size:16px}
+
+/* ── Header ── */
+header{position:sticky;top:0;z-index:500;background:rgba(10,10,10,.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.header-inner{max-width:1260px;margin:0 auto;display:flex;align-items:center;padding:0 24px;height:64px;gap:6px}
+.logo{display:flex;align-items:center;gap:10px;margin-right:28px;flex-shrink:0;cursor:pointer}
+.logo-icon{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0d2b10,#1a5c20);border:2px solid var(--green);
+  display:flex;align-items:center;justify-content:center;font-size:20px}
+.logo-text{font-size:18px;font-weight:900;letter-spacing:-.3px}
+.logo-text span{color:var(--green)}
+
+/* Main Nav */
+nav{display:flex;align-items:center;gap:2px;flex:1}
+.nav-link{padding:8px 13px;font-size:13px;font-weight:600;color:var(--muted);border-radius:5px;
+  transition:color .2s,background .2s;display:flex;align-items:center;gap:4px;cursor:pointer;position:relative}
+.nav-link:hover,.nav-link.active{color:var(--text);background:var(--surface)}
+.nav-arrow{font-size:10px;transition:transform .2s}
+
+/* Dropdown */
+.has-dropdown{position:relative}
+.has-dropdown.open .nav-arrow{transform:rotate(180deg)}
+.dropdown-menu{
+  position:absolute;top:calc(100% + 8px);left:0;min-width:200px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  box-shadow:0 12px 40px rgba(0,0,0,.7);padding:6px;z-index:600;
+  opacity:0;pointer-events:none;transform:translateY(-8px);transition:opacity .18s,transform .18s
+}
+.has-dropdown.open .dropdown-menu{opacity:1;pointer-events:all;transform:translateY(0)}
+.dropdown-menu a,.dropdown-item{
+  display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:5px;
+  font-size:13px;color:var(--muted);cursor:pointer;transition:background .15s,color .15s;white-space:nowrap
+}
+.dropdown-menu a:hover,.dropdown-item:hover{background:var(--card);color:var(--text)}
+.dropdown-menu a.active-item{color:var(--green)}
+.dropdown-sep{height:1px;background:var(--border);margin:5px 0}
+
+/* Games dropdown – 2-col grid */
+.games-dropdown-menu{min-width:340px;padding:8px}
+.games-dd-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.games-dd-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:5px;cursor:pointer;transition:background .15s}
+.games-dd-item:hover{background:var(--card)}
+.games-dd-img{width:36px;height:22px;border-radius:3px;object-fit:cover;flex-shrink:0}
+.games-dd-name{font-size:12px;font-weight:700;color:var(--muted)}
+.games-dd-item:hover .games-dd-name{color:var(--text)}
+
+/* Header Right */
+.header-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.hdr-btn{
+  display:flex;align-items:center;gap:5px;background:var(--surface);border:1px solid var(--border);
+  border-radius:5px;padding:7px 12px;font-size:12px;cursor:pointer;color:var(--muted);
+  font-weight:600;transition:border-color .2s,color .2s;white-space:nowrap
+}
+.hdr-btn:hover{border-color:var(--green);color:var(--text)}
+.cart-btn{position:relative;font-size:17px;padding:7px 11px}
+.cart-badge{
+  position:absolute;top:-5px;right:-5px;background:var(--green);color:#000;
+  border-radius:50%;width:18px;height:18px;font-size:9px;font-weight:800;
+  display:flex;align-items:center;justify-content:center
+}
+
+/* ── Hero ── */
+.hero{position:relative;background:#0a0a0a;overflow:hidden;min-height:420px;display:flex;align-items:center}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.65}
+.hero-content{position:relative;z-index:2;padding:64px 24px;max-width:560px;margin-left:clamp(24px,6vw,80px)}
+.hero-content h1{font-size:clamp(32px,5vw,52px);font-weight:900;line-height:1.1;letter-spacing:-.5px}
+.hero-content h2{font-size:clamp(15px,2.5vw,22px);font-weight:700;color:var(--green);margin:10px 0 20px}
+.hero-content p{font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:32px;max-width:460px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.hero-stats{display:flex;gap:32px;margin-top:36px;flex-wrap:wrap}
+.hero-stat-val{font-size:22px;font-weight:900;color:var(--green)}
+.hero-stat-lbl{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── Section ── */
+.section{max-width:1260px;margin:0 auto;padding:64px 24px}
+.section-title{font-size:28px;font-weight:800;margin-bottom:36px}
+.section-title span{color:var(--green)}
+.section-sub{font-size:14px;color:var(--muted);margin-top:-24px;margin-bottom:36px}
+.section-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:12px}
+
+/* ── Game Grid ── */
+.game-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.game-card{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:16/9;cursor:pointer;
+  border:1px solid var(--border);transition:border-color .25s,transform .25s,box-shadow .25s}
+.game-card:hover{border-color:var(--green);transform:translateY(-4px);box-shadow:0 8px 28px var(--green-glow)}
+.game-bg{width:100%;height:100%;overflow:hidden;background:#111}
+.game-bg img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+.game-card:hover .game-bg img{transform:scale(1.06)}
+.game-bg-rust{background:linear-gradient(135deg,#1a1208,#3d2a0a,#2b1c05)}
+.game-bg-sot{background:linear-gradient(135deg,#0d1a2e,#1a2d4a,#0a3060)}
+.game-bg-ffxiv{background:linear-gradient(135deg,#1e0a2e,#3d1460,#5c2090)}
+.game-bg-paladins{background:linear-gradient(135deg,#2e0a1a,#5c1430,#3a0d20)}
+.game-bg-bf2042{background:linear-gradient(135deg,#0a1a0a,#1a3a1a,#0d2a0d)}
+.game-bg-freefire{background:linear-gradient(135deg,#2a0a2e,#501460,#3a1050)}
+.game-bg-pubg{background:linear-gradient(135deg,#1a1408,#38280a,#4a3210)}
+.game-bg-codm{background:linear-gradient(135deg,#0a0a14,#141428,#1e1e40)}
+.game-bg-coc{background:linear-gradient(135deg,#0d1a0d,#183618,#0a2a10)}
+.game-bg-fortnite{background:linear-gradient(135deg,#0a1428,#14285c,#1e3c7a)}
+.game-bg-valorant{background:linear-gradient(135deg,#1e0808,#400f0f,#5c1414)}
+.game-bg-lol{background:linear-gradient(135deg,#0a1428,#142250,#0a1e46)}
+.game-label{position:absolute;bottom:0;left:0;right:0;padding:28px 12px 10px;
+  background:linear-gradient(to top,rgba(0,0,0,.9),transparent)}
+.game-label span{font-size:12px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+.tag{display:inline-block;margin-left:7px;background:var(--green);color:#000;
+  font-size:9px;font-weight:800;letter-spacing:.5px;padding:2px 6px;border-radius:3px;
+  text-transform:uppercase;vertical-align:middle}
+.game-hover-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s}
+.game-card:hover .game-hover-btn{opacity:1}
+.game-hover-btn span{background:var(--green);color:#000;font-size:12px;font-weight:800;
+  padding:8px 18px;border-radius:5px;letter-spacing:.3px}
+
+/* ── Steps ── */
+.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px 22px;text-align:center;transition:border-color .25s}
+.step-card:hover{border-color:var(--green)}
+.step-num{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0d2b10,#1a5c20);
+  border:2px solid var(--green);display:flex;align-items:center;justify-content:center;
+  font-size:17px;font-weight:800;color:var(--green);margin:0 auto 16px}
+.step-icon{font-size:30px;margin-bottom:12px}
+.step-card h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.step-card p{font-size:13px;color:var(--muted);line-height:1.6}
+
+/* ── Why Choose ── */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.why-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px 24px;transition:border-color .25s,box-shadow .25s}
+.why-card:hover{border-color:var(--green);box-shadow:0 6px 22px var(--green-glow)}
+.why-icon{font-size:32px;margin-bottom:14px}
+.why-card h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.why-card p{font-size:13px;color:var(--muted);line-height:1.65}
+
+/* ── Pricing ── */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.price-card{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:32px 24px;text-align:center;transition:border-color .25s,transform .25s;position:relative}
+.price-card.featured{border-color:var(--green);box-shadow:0 0 0 1px var(--green),0 8px 32px var(--green-glow)}
+.price-card:hover{border-color:var(--green);transform:translateY(-4px)}
+.popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#000;font-size:11px;font-weight:800;padding:3px 14px;
+  border-radius:20px;letter-spacing:.5px;text-transform:uppercase}
+.price-tier{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+.price-amount{font-size:36px;font-weight:900}
+.price-amount sup{font-size:18px;vertical-align:top;margin-top:6px}
+.price-desc{font-size:13px;color:var(--muted);margin:8px 0 20px}
+.price-features{text-align:left;margin-bottom:24px}
+.price-features li{font-size:13px;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:8px}
+.price-features li::before{content:"✓";color:var(--green);font-weight:800;flex-shrink:0}
+
+/* ── Testimonials ── */
+.testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.testimonial-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
+.testimonial-stars{color:var(--green);font-size:14px;margin-bottom:12px}
+.testimonial-text{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px;font-style:italic}
+.testimonial-author{display:flex;align-items:center;gap:10px}
+.author-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#0d2b10,#1a5c20);
+  border:1.5px solid var(--green);display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:800;flex-shrink:0}
+.author-name{font-size:13px;font-weight:700}
+.author-game{font-size:11px;color:var(--green)}
+
+/* ── CTA Banner ── */
+.cta-banner{background:linear-gradient(135deg,#0d1a0d,#0a0a0a,#0a1a0d);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:64px 24px;text-align:center;position:relative;overflow:hidden}
+.cta-banner::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 80% at 50% 50%,var(--green-glow),transparent 70%);
+  pointer-events:none}
+.cta-banner h2{font-size:36px;font-weight:900;position:relative;z-index:1}
+.cta-banner p{color:var(--muted);font-size:15px;margin:12px 0 30px;position:relative;z-index:1}
+.cta-banner .btn{position:relative;z-index:1;font-size:15px;padding:14px 32px}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* ── Footer ── */
+footer{background:var(--surface);border-top:1px solid var(--border)}
+.footer-main{max-width:1260px;margin:0 auto;padding:50px 24px 36px;
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+.footer-brand p{font-size:13px;color:var(--muted);line-height:1.7;margin-top:12px;max-width:260px}
+.footer-social{display:flex;gap:8px;margin-top:18px}
+.social-icon{width:34px;height:34px;border-radius:6px;background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;
+  transition:border-color .2s}
+.social-icon:hover{border-color:var(--green)}
+.footer-col h4{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:18px}
+.footer-col ul{display:flex;flex-direction:column;gap:10px}
+.footer-col ul li a{font-size:13px;color:var(--muted);transition:color .2s;cursor:pointer}
+.footer-col ul li a:hover{color:var(--green)}
+.footer-bottom{border-top:1px solid var(--border);padding:18px 24px;max-width:1260px;margin:0 auto;
+  display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);flex-wrap:wrap;gap:8px}
+.pay-methods{display:flex;gap:6px}
+.pay-chip{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:3px 8px;
+  font-size:10px;font-weight:700}
+
+/* ── Catalog (Games Page) ── */
+.page-hero{background:linear-gradient(135deg,#0a0a0a,#0d1a0d);padding:48px 24px 40px;
+  border-bottom:1px solid var(--border);text-align:center}
+.page-hero h1{font-size:clamp(24px,4vw,38px);font-weight:900;margin-bottom:10px}
+.page-hero p{color:var(--muted);font-size:14px}
+.filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:20px 24px;
+  max-width:1260px;margin:0 auto}
+.filter-btn{padding:7px 16px;border-radius:20px;border:1px solid var(--border);background:var(--surface);
+  font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;text-transform:uppercase;letter-spacing:.4px}
+.filter-btn:hover,.filter-btn.active{background:var(--green);color:#000;border-color:var(--green)}
+.catalog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1260px;margin:0 auto;padding:0 24px 60px}
+.catalog-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  transition:border-color .25s,transform .25s,box-shadow .25s}
+.catalog-card:hover{border-color:var(--green);transform:translateY(-4px);box-shadow:0 8px 28px var(--green-glow)}
+.catalog-img{position:relative;aspect-ratio:16/9;overflow:hidden;cursor:pointer}
+.catalog-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+.catalog-card:hover .catalog-img img{transform:scale(1.05)}
+.catalog-tag{position:absolute;top:10px;right:10px;background:var(--green);color:#000;
+  font-size:9px;font-weight:800;padding:3px 8px;border-radius:3px;text-transform:uppercase}
+.catalog-info{padding:16px}
+.catalog-name{font-size:15px;font-weight:800;margin-bottom:6px}
+.catalog-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.catalog-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.from-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.price-val{font-size:20px;font-weight:900;color:var(--green)}
+.catalog-price{display:flex;flex-direction:column}
+
+/* ── Game Detail Page ── */
+.detail-back{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;
+  cursor:pointer;padding:20px 24px;max-width:1260px;margin:0 auto;transition:color .2s}
+.detail-back:hover{color:var(--green)}
+.detail-layout{max-width:1260px;margin:0 auto;padding:0 24px 60px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.detail-left .detail-img{border-radius:12px;overflow:hidden;border:1px solid var(--border);aspect-ratio:16/9}
+.detail-img img{width:100%;height:100%;object-fit:cover;display:block}
+.detail-game-name{font-size:26px;font-weight:900;margin:20px 0 8px}
+.detail-game-desc{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px}
+.detail-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.badge{padding:5px 12px;border-radius:20px;border:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted)}
+.badge.green{border-color:var(--green);color:var(--green)}
+.packages-grid{display:flex;flex-direction:column;gap:14px}
+.pkg-card{background:var(--card);border:1.5px solid var(--border);border-radius:12px;padding:22px;
+  cursor:pointer;transition:border-color .2s,box-shadow .2s;position:relative}
+.pkg-card:hover,.pkg-card.selected{border-color:var(--green);box-shadow:0 4px 20px var(--green-glow)}
+.pkg-card.featured{border-color:var(--green)}
+.pkg-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pkg-name{font-size:16px;font-weight:800}
+.pkg-price{font-size:24px;font-weight:900;color:var(--green)}
+.pkg-price sup{font-size:13px;vertical-align:top;margin-top:4px}
+.pkg-features{display:flex;flex-direction:column;gap:5px;margin-bottom:0}
+.pkg-features li{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.pkg-features li::before{content:"✓";color:var(--green);font-weight:800;flex-shrink:0}
+.pkg-most-pop{position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#000;font-size:10px;font-weight:800;padding:2px 12px;
+  border-radius:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+
+/* ── Cart Drawer ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:700;opacity:0;pointer-events:none;transition:opacity .3s}
+.overlay.active{opacity:1;pointer-events:all}
+.cart-drawer{position:fixed;top:0;right:0;height:100vh;width:400px;max-width:95vw;
+  background:var(--surface);border-left:1px solid var(--border);z-index:800;
+  display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+.cart-drawer.open{transform:translateX(0)}
+.cart-header{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;
+  border-bottom:1px solid var(--border)}
+.cart-header h3{font-size:16px;font-weight:800}
+.close-btn{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  border-radius:5px;transition:background .2s;padding:0}
+.close-btn:hover{background:var(--card);color:var(--text)}
+.cart-items{flex:1;overflow-y:auto;padding:16px}
+.cart-empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.cart-empty p{margin:12px 0 20px;font-size:14px}
+.cart-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;
+  margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.cart-item-img{width:60px;height:38px;border-radius:4px;object-fit:cover;flex-shrink:0}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-item-pkg{font-size:11px;color:var(--muted);margin-top:2px}
+.cart-item-price{font-size:14px;font-weight:800;color:var(--green);margin-top:4px}
+.cart-item-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.qty-control{display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:5px;overflow:hidden}
+.qty-control button{background:var(--surface);border:none;color:var(--text);width:26px;height:26px;
+  font-size:16px;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center}
+.qty-control button:hover{background:var(--card)}
+.qty-control span{width:28px;text-align:center;font-size:13px;font-weight:700;line-height:26px}
+.remove-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;
+  padding:4px;border-radius:4px;transition:color .2s,background .2s}
+.remove-btn:hover{color:var(--red);background:rgba(224,80,80,.1)}
+.cart-footer{padding:18px 22px;border-top:1px solid var(--border)}
+.cart-summary-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.cart-summary-row span:first-child{font-size:13px;color:var(--muted)}
+.cart-total{font-size:20px;font-weight:900}
+
+/* ── Checkout Page ── */
+.checkout-layout{max-width:1000px;margin:0 auto;padding:40px 24px 60px;
+  display:grid;grid-template-columns:1.4fr 1fr;gap:32px;align-items:start}
+.checkout-form-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px}
+.checkout-form-box h3{font-size:17px;font-weight:800;margin-bottom:22px;display:flex;align-items:center;gap:8px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.form-group input{width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:6px;padding:11px 14px;font-size:14px;color:var(--text);font-family:inherit;
+  transition:border-color .2s,box-shadow .2s;outline:none}
+.form-group input:focus{border-color:var(--green);box-shadow:0 0 0 2px var(--green-glow)}
+.form-group input.error{border-color:var(--red)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.checkout-summary{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;position:sticky;top:80px}
+.checkout-summary h3{font-size:16px;font-weight:800;margin-bottom:18px}
+.summary-item{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--border);font-size:13px}
+.summary-item span:first-child{color:var(--muted);flex:1}
+.summary-item span:last-child{font-weight:700;white-space:nowrap}
+.summary-total-row{display:flex;justify-content:space-between;margin-top:16px;padding-top:4px}
+.summary-total-row span:first-child{font-size:14px;color:var(--muted)}
+.summary-total-val{font-size:22px;font-weight:900;color:var(--green)}
+.checkout-note{font-size:11px;color:var(--muted);margin-top:16px;line-height:1.6}
+.secure-badges{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap}
+.secure-chip{background:var(--surface);border:1px solid var(--border);
+  border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;color:var(--muted)}
+
+/* ── Order Confirmation ── */
+.confirm-page{max-width:600px;margin:0 auto;padding:80px 24px;text-align:center}
+.confirm-icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#0d2b10,#1a5c20);
+  border:2px solid var(--green);display:flex;align-items:center;justify-content:center;
+  font-size:36px;margin:0 auto 24px}
+.confirm-page h1{font-size:30px;font-weight:900;margin-bottom:10px}
+.confirm-page p{color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:6px}
+.order-num{background:var(--card);border:1px solid var(--green);border-radius:8px;
+  padding:14px 24px;margin:24px auto;display:inline-block;font-size:15px;font-weight:700}
+.order-num span{color:var(--green);font-size:18px}
+.confirm-next{margin-top:32px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;right:24px;z-index:1000;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:14px 20px;font-size:13px;font-weight:600;min-width:220px;max-width:340px;
+  box-shadow:0 8px 30px rgba(0,0,0,.6);transform:translateY(20px);opacity:0;
+  transition:all .3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.info{border-left:3px solid #4a9fd4}
+
+/* ── Responsive ── */
+@media(max-width:1100px){
+  .game-grid{grid-template-columns:repeat(3,1fr)}
+  .catalog-grid{grid-template-columns:repeat(2,1fr)}
+  .checkout-layout{grid-template-columns:1fr}
+  .checkout-summary{position:static}
+}
+@media(max-width:900px){
+  .detail-layout{grid-template-columns:1fr}
+  .steps-grid{grid-template-columns:1fr 1fr}
+  .why-grid,.testimonials-grid{grid-template-columns:1fr}
+  .footer-main{grid-template-columns:1fr 1fr}
+  .pricing-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  nav{display:none}
+  .game-grid{grid-template-columns:repeat(2,1fr)}
+  .catalog-grid{grid-template-columns:1fr}
+  .footer-main{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .game-grid{grid-template-columns:1fr 1fr}
+  .cart-drawer{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ HEADER ══ -->
+<header>
+  <div class="header-inner">
+    <div class="logo" onclick="showPage('home')">
+      <div class="logo-icon">⚔️</div>
+      <div class="logo-text">APEX<span>BOOST</span></div>
+    </div>
+
+    <nav>
+      <span class="nav-link active" data-page="home" onclick="showPage('home')">HOME</span>
+
+      <span class="nav-link has-dropdown" onclick="toggleDropdown('dd-games')">
+        GAMES <span class="nav-arrow">▾</span>
+        <div class="dropdown-menu games-dropdown-menu" id="dd-games">
+          <div class="games-dd-grid" id="games-dd-grid"><!-- filled by JS --></div>
+          <div class="dropdown-sep"></div>
+          <div class="dropdown-item" onclick="showPage('games');closeAllDropdowns()">🎮 View All Games →</div>
+        </div>
+      </span>
+
+      <span class="nav-link" data-page="pricing" onclick="showPage('pricing')">PRICING</span>
+
+      <span class="nav-link" onclick="showPage('home');setTimeout(()=>document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'}),80)">HOW IT WORKS</span>
+
+      <span class="nav-link" onclick="showPage('home');setTimeout(()=>document.getElementById('why-us').scrollIntoView({behavior:'smooth'}),80)">WHY US</span>
+    </nav>
+
+    <div class="header-right">
+
+      <!-- Language -->
+      <div class="has-dropdown" onclick="toggleDropdown('dd-lang')">
+        <div class="hdr-btn" id="lang-label">🇺🇸 EN <span class="nav-arrow">▾</span></div>
+        <div class="dropdown-menu" id="dd-lang" style="right:0;left:auto">
+          <div class="dropdown-item active-item" onclick="setLang('🇺🇸','EN')">🇺🇸 English</div>
+          <div class="dropdown-item" onclick="setLang('🇪🇸','ES')">🇪🇸 Español</div>
+          <div class="dropdown-item" onclick="setLang('🇫🇷','FR')">🇫🇷 Français</div>
+          <div class="dropdown-item" onclick="setLang('🇩🇪','DE')">🇩🇪 Deutsch</div>
+          <div class="dropdown-item" onclick="setLang('🇧🇷','PT')">🇧🇷 Português</div>
+        </div>
+      </div>
+
+      <!-- Currency -->
+      <div class="has-dropdown" onclick="toggleDropdown('dd-curr')">
+        <div class="hdr-btn" id="curr-label">$ USD <span class="nav-arrow">▾</span></div>
+        <div class="dropdown-menu" id="dd-curr" style="right:0;left:auto">
+          <div class="dropdown-item active-item" onclick="setCurr('$','USD')">$ USD – US Dollar</div>
+          <div class="dropdown-item" onclick="setCurr('€','EUR')">€ EUR – Euro</div>
+          <div class="dropdown-item" onclick="setCurr('£','GBP')">£ GBP – British Pound</div>
+          <div class="dropdown-item" onclick="setCurr('R$','BRL')">R$ BRL – Brazilian Real</div>
+          <div class="dropdown-item" onclick="setCurr('A$','AUD')">A$ AUD – Australian Dollar</div>
+        </div>
+      </div>
+
+      <!-- My Account -->
+      <div class="has-dropdown" onclick="toggleDropdown('dd-acct')">
+        <div class="hdr-btn">👤 MY ACCOUNT <span class="nav-arrow">▾</span></div>
+        <div class="dropdown-menu" id="dd-acct" style="right:0;left:auto">
+          <div class="dropdown-item" onclick="showToast('Login coming soon!','info');closeAllDropdowns()">🔐 Login</div>
+          <div class="dropdown-item" onclick="showToast('Registration coming soon!','info');closeAllDropdowns()">✨ Register</div>
+          <div class="dropdown-sep"></div>
+          <div class="dropdown-item" onclick="showToast('View your orders here','info');closeAllDropdowns()">📦 My Orders</div>
+          <div class="dropdown-item" onclick="showToast('Manage your profile','info');closeAllDropdowns()">⚙️ Settings</div>
+        </div>
+      </div>
+
+      <!-- Cart -->
+      <div class="hdr-btn cart-btn" onclick="openCartDrawer()">
+        🛒 <div class="cart-badge" id="cart-badge">0</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════ CART DRAWER ══ -->
+<div class="overlay" id="drawer-overlay" onclick="closeCartDrawer()"></div>
+<div class="cart-drawer" id="cart-drawer">
+  <div class="cart-header">
+    <h3>🛒 Your Cart</h3>
+    <button class="close-btn" onclick="closeCartDrawer()">✕</button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-footer" id="cart-footer" style="display:none">
+    <div class="cart-summary-row">
+      <span>Subtotal</span>
+      <span class="cart-total" id="cart-total">$0.00</span>
+    </div>
+    <button class="btn btn-green btn-full btn-lg" onclick="goToCheckout()">PROCEED TO CHECKOUT →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ PAGE: HOME ══ -->
+<div class="page active" id="page-home">
+
+  <!-- Hero -->
+  <section class="hero">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-content">
+      <h1>Online Game Boost</h1>
+      <h2>Rank Up With Expert Help</h2>
+      <p>Skilled gamers play on your behalf to upgrade levels faster. Efficiently boost progress, unlock achievements, and dominate without grinding endlessly.</p>
+      <div class="hero-btns">
+        <button class="btn btn-green btn-lg" onclick="showPage('games')">BROWSE GAMES ▶</button>
+        <button class="btn btn-outline btn-lg" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">HOW IT WORKS</button>
+      </div>
+      <div class="hero-stats">
+        <div><div class="hero-stat-val">50K+</div><div class="hero-stat-lbl">Orders Completed</div></div>
+        <div><div class="hero-stat-val">12</div><div class="hero-stat-lbl">Games Supported</div></div>
+        <div><div class="hero-stat-val">4.9★</div><div class="hero-stat-lbl">Average Rating</div></div>
+        <div><div class="hero-stat-val">24/7</div><div class="hero-stat-lbl">Support</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game Collection -->
+  <div class="section" id="games-home">
+    <div class="section-row">
+      <div class="section-title" style="margin-bottom:0">Our <span>Game Collection</span></div>
+      <button class="btn btn-outline btn-sm" onclick="showPage('games')">VIEW ALL GAMES →</button>
+    </div>
+    <div class="game-grid" id="home-game-grid">
+
+    <div class="game-card" onclick="openGameDetail('rust')">
+      <div class="game-bg game-bg-rust"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYTBlMDQiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzNkMWUwNiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzFmMTAwOCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM2MCIgY3k9IjYwIiByPSI5MCIgZmlsbD0iI2M0NWUwYSIgb3BhY2l0eT0iMC4yNSIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTYwIiByPSI3MCIgZmlsbD0iIzhiM2EwMCIgb3BhY2l0eT0iMC4yIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8Y2lyY2xlIGN4PSIzNzAiIGN5PSIxMDgiIHI9IjU1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjNDVlMGEiIHN0cm9rZS13aWR0aD0iOCIgb3BhY2l0eT0iMC4zNSIvPgogIDxjaXJjbGUgY3g9IjM3MCIgY3k9IjEwOCIgcj0iMzgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2M0NWUwYSIgc3Ryb2tlLXdpZHRoPSI1IiBvcGFjaXR5PSIwLjI1Ii8+CiAgPGNpcmNsZSBjeD0iMzcwIiBjeT0iMTA4IiByPSIxOCIgZmlsbD0iIzhiM2EwMCIgb3BhY2l0eT0iMC41Ii8+CiAgPHJlY3QgeD0iMzU2IiB5PSI0OCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjE0IiByeD0iNCIgZmlsbD0iI2M0NWUwYSIgb3BhY2l0eT0iMC40IiB0cmFuc2Zvcm09InJvdGF0ZSgwIDM3MCAxMDgpIi8+CiAgPHJlY3QgeD0iMzU2IiB5PSI0OCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjE0IiByeD0iNCIgZmlsbD0iI2M0NWUwYSIgb3BhY2l0eT0iMC40IiB0cmFuc2Zvcm09InJvdGF0ZSg0NSAzNzAgMTA4KSIvPgogIDxyZWN0IHg9IjM1NiIgeT0iNDgiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxNCIgcng9IjQiIGZpbGw9IiNjNDVlMGEiIG9wYWNpdHk9IjAuNCIgdHJhbnNmb3JtPSJyb3RhdGUoOTAgMzcwIDEwOCkiLz4KICA8cmVjdCB4PSIzNTYiIHk9IjQ4IiB3aWR0aD0iMjgiIGhlaWdodD0iMTQiIHJ4PSI0IiBmaWxsPSIjYzQ1ZTBhIiBvcGFjaXR5PSIwLjQiIHRyYW5zZm9ybT0icm90YXRlKDEzNSAzNzAgMTA4KSIvPgogIDxsaW5lIHgxPSI2MCIgeTE9IjgwIiB4Mj0iMTQwIiB5Mj0iODAiIHN0cm9rZT0iI2UwNzAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iMTAwIiB5MT0iNDAiIHgyPSIxMDAiIHkyPSIxMjAiIHN0cm9rZT0iI2UwNzAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4MCIgcj0iMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2UwNzAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8dGV4dCB4PSIzNiIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSI1NiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2UwNzAyMCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjQiPlJVU1Q8L3RleHQ+Cgo8L3N2Zz4=" alt="Rust"/></div>
+      <div class="game-label"><span>RUST</span><span class="tag">Popular</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('sot')">
+      <div class="game-bg game-bg-sot"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDBmMWUiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMjA0MCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MTgzMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM4MCIgY3k9IjEwMCIgcj0iMTAwIiBmaWxsPSIjMGE1ZmE4IiBvcGFjaXR5PSIwLjMiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxwYXRoIGQ9Ik0wIDE0MCBRNjAgMTEwIDEyMCAxNDAgUTE4MCAxNzAgMjQwIDE0MCBRMzAwIDExMCAzNjAgMTQwIFE0MjAgMTcwIDQ2MCAxNDAgTDQ2MCAyMTUgTDAgMjE1WiIgZmlsbD0iIzBhNGE4MCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBhdGggZD0iTTAgMTYwIFE4MCAxMzAgMTYwIDE2MCBRMjQwIDE5MCAzMjAgMTYwIFE0MDAgMTMwIDQ2MCAxNjAgTDQ2MCAyMTUgTDAgMjE1WiIgZmlsbD0iIzA2MzY2MCIgb3BhY2l0eT0iMC42Ii8+CiAgPHBhdGggZD0iTTI4MCA4MCBMMzAwIDE0NSBMMzgwIDE0NSBMNDAwIDgwIFoiIGZpbGw9IiMwYTJhNGEiIG9wYWNpdHk9IjAuNyIvPgogIDxsaW5lIHgxPSIzNDAiIHkxPSIzMCIgeDI9IjM0MCIgeTI9IjE0NSIgc3Ryb2tlPSIjYjg4NjBiIiBzdHJva2Utd2lkdGg9IjMiIG9wYWNpdHk9IjAuNiIvPgogIDxwb2x5Z29uIHBvaW50cz0iMzQwLDMyIDM5MCw3MiAzNDAsNzIiIGZpbGw9IiNkNGEwMjAiIG9wYWNpdHk9IjAuNSIvPgogIDxwb2x5Z29uIHBvaW50cz0iMzQwLDMyIDI5MCw2MiAzNDAsNjIiIGZpbGw9IiNkNGEwMjAiIG9wYWNpdHk9IjAuNCIvPgogIDxjaXJjbGUgY3g9IjkwIiBjeT0iMTAwIiByPSI0NSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGE5ZmQ0IiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMzUiLz4KICA8bGluZSB4MT0iOTAiIHkxPSI1OCIgeDI9IjkwIiB5Mj0iMTQyIiBzdHJva2U9IiM0YTlmZDQiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iNDgiIHkxPSIxMDAiIHgyPSIxMzIiIHkyPSIxMDAiIHN0cm9rZT0iIzRhOWZkNCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNCIvPgogIDxwb2x5Z29uIHBvaW50cz0iOTAsNTggODUsNzUgOTUsNzUiIGZpbGw9IiNkNGEwMjAiIG9wYWNpdHk9IjAuNiIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjNGE5ZmQ0IiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+U0VBIE9GIFRISUVWRVM8L3RleHQ+Cgo8L3N2Zz4=" alt="Sea of Thieves"/></div>
+      <div class="game-label"><span>SEA OF THIEVES</span><span class="tag">Adventure</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('ffxiv')">
+      <div class="game-bg game-bg-ffxiv"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwZTA0MTgiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzFlMGEzNiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBhMGUyNCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiM3YTIwYzgiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTQwIiByPSI3MCIgZmlsbD0iIzNhMDg4MCIgb3BhY2l0eT0iMC4yNSIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPHBvbHlnb24gcG9pbnRzPSIyMzAsMjAgMjQ1LDYwIDI5MCw2MCAyNTUsODUgMjY4LDEzMCAyMzAsMTA1IDE5MiwxMzAgMjA1LDg1IDE3MCw2MCAyMTUsNjAiIGZpbGw9IiNmZmQ3MDAiIG9wYWNpdHk9IjAuMjIiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjEwOCIgcj0iNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2EwNTBlMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMzUiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSIxMDgiIHI9IjQwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmQ3MDAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDxwb2x5Z29uIHBvaW50cz0iOTAsNDAgMTAwLDcwIDEzMCw3MCAxMDcsODggMTE2LDExOCA5MCwxMDAgNjQsMTE4IDczLDg4IDUwLDcwIDgwLDcwIiBmaWxsPSIjYzA2MGYwIiBvcGFjaXR5PSIwLjMiLz4KICA8cG9seWdvbiBwb2ludHM9IjM3MCw2MCAzNzgsODQgNDAzLDg0IDM4Myw5OCAzOTEsMTIyIDM3MCwxMDggMzQ5LDEyMiAzNTcsOTggMzM3LDg0IDM2Miw4NCIgZmlsbD0iI2ZmZDcwMCIgb3BhY2l0eT0iMC4yNSIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjMwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjYzA2MGYwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+RklOQUwgRkFOVEFTWSBYSVY8L3RleHQ+Cgo8L3N2Zz4=" alt="Final Fantasy XIV"/></div>
+      <div class="game-label"><span>FINAL FANTASY XIV</span><span class="tag">MMORPG</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('paladins')">
+      <div class="game-bg game-bg-paladins"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyMDAwMDgiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzRhMDAxOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzE4MDAxMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSI5MCIgZmlsbD0iI2MwMDAzMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8cGF0aCBkPSJNMjMwIDIwIEwyNzAgMjAgTDI5MCA1MCBMMjcwIDgwIEwyMzAgODAgTDIxMCA1MCBaIiBmaWxsPSIjYzAwMDMwIiBvcGFjaXR5PSIwLjMiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxwYXRoIGQ9Ik0yMzAgMjAgTDI3MCAyMCBMMjkwIDUwIEwyNzAgODAgTDIzMCA4MCBMMjEwIDUwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmNDA2MCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjQiLz4KICA8Y2lyY2xlIGN4PSIyNTAiIGN5PSI1MCIgcj0iMTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmNDA2MCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iMjUwIiB5MT0iMzUiIHgyPSIyNTAiIHkyPSI2NSIgc3Ryb2tlPSIjZmY0MDYwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC40Ii8+CiAgPGxpbmUgeDE9IjIzNSIgeTE9IjUwIiB4Mj0iMjY1IiB5Mj0iNTAiIHN0cm9rZT0iI2ZmNDA2MCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNCIvPgogIDxwYXRoIGQ9Ik04MCAzMCBMMTAwIDMwIEwxMTAgNTAgTDEwMCAxMTAgTDgwIDExMCBMNzAgNTAgWiIgZmlsbD0iIzhiMDAyMCIgb3BhY2l0eT0iMC40Ii8+CiAgPHJlY3QgeD0iNjAiIHk9IjEwOCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjgiIHJ4PSIyIiBmaWxsPSIjYzAwMDMwIiBvcGFjaXR5PSIwLjM1Ii8+CiAgPHRleHQgeD0iMzAiIHk9IjE1NSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDQiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiNmZjQwNjAiIG9wYWNpdHk9IjAuMTgiIGxldHRlci1zcGFjaW5nPSIzIj5QQUxBRElOUzwvdGV4dD4KCjwvc3ZnPg==" alt="Paladins"/></div>
+      <div class="game-label"><span>PALADINS</span><span class="tag">FPS</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('bf2042')">
+      <div class="game-bg game-bg-bf2042"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNjBlMDQiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBlMWUwOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA4MTIwOCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjcwIiByPSI5MCIgZmlsbD0iIzQwNjAyMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8bGluZSB4MT0iMCIgeTE9IjUwIiB4Mj0iNDYwIiB5Mj0iNTAiIHN0cm9rZT0iIzgwYzA0MCIgc3Ryb2tlLXdpZHRoPSIwLjUiIG9wYWNpdHk9IjAuMiIvPgogIDxsaW5lIHgxPSIwIiB5MT0iMTAwIiB4Mj0iNDYwIiB5Mj0iMTAwIiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMC41IiBvcGFjaXR5PSIwLjIiLz4KICA8bGluZSB4MT0iMCIgeTE9IjE1MCIgeDI9IjQ2MCIgeTI9IjE1MCIgc3Ryb2tlPSIjODBjMDQwIiBzdHJva2Utd2lkdGg9IjAuNSIgb3BhY2l0eT0iMC4yIi8+CiAgPHBhdGggZD0iTTI4MCA4MCBMMzYwIDYwIEw0MDAgNzUgTDM4MCAxMDAgTDMwMCAxMTAgWiIgZmlsbD0iIzIwNDAxMCIgb3BhY2l0eT0iMC42Ii8+CiAgPGNpcmNsZSBjeD0iMzIwIiBjeT0iNTUiIHI9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iMzIwIiB5MT0iMzgiIHgyPSIzMjAiIHkyPSI3MiIgc3Ryb2tlPSIjODBjMDQwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuNCIvPgogIDxsaW5lIHgxPSIzMDMiIHkxPSI1NSIgeDI9IjMzNyIgeTI9IjU1IiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC40Ii8+CiAgPGNpcmNsZSBjeD0iMzIwIiBjeT0iNTUiIHI9IjQiIGZpbGw9IiM4MGMwNDAiIG9wYWNpdHk9IjAuNSIvPgogIDxwYXRoIGQ9Ik04MCA2MCBMNjAgMTAwIEwxMDAgMTEwIEwxMzAgODUgWiIgZmlsbD0iIzIwNDAxMCIgb3BhY2l0eT0iMC41Ii8+CiAgPGxpbmUgeDE9Ijk1IiB5MT0iNjAiIHgyPSI5NSIgeTI9IjI1IiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC40Ii8+CiAgPHRleHQgeD0iMzAiIHk9IjE1NSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiM4MGMwNDAiIG9wYWNpdHk9IjAuMTgiIGxldHRlci1zcGFjaW5nPSIzIj5CRiAyMDQyPC90ZXh0PgoKPC9zdmc+" alt="Battlefield 2042"/></div>
+      <div class="game-label"><span>BATTLEFIELD 2042</span><span class="tag">FPS</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('freefire')">
+      <div class="game-bg game-bg-freefire"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYTA0MjgiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzJlMDg1MCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzE4MDQzMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjgwIiByPSI5MCIgZmlsbD0iIzgwMjBjMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSIxNDAiIHI9IjcwIiBmaWxsPSIjYzA1MDEwIiBvcGFjaXR5PSIwLjIiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxwYXRoIGQ9Ik0yMzAgMTIwIEwyMTggODUgTDIyNSA5MCBMMjMwIDcwIEwyMzUgOTAgTDI0MiA4NSBaIiBmaWxsPSIjZmY2MDIwIiBvcGFjaXR5PSIwLjYiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxwYXRoIGQ9Ik0yMzAgMTIwIEwyMTUgODAgTDIyMiA4NiBMMjMwIDY1IEwyMzggODYgTDI0NSA4MCBaIiBmaWxsPSIjZmY4MDQwIiBvcGFjaXR5PSIwLjQiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSIxNDAiIHI9IjUwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZjYwMjAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjMiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSIxNDAiIHI9IjM1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjMDQwYTAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDxwYXRoIGQ9Ik04MCA0MCBMMTAwIDIwIEwxMDAgNTAgTDEyMCAzMCBMMTEwIDYwIEwxMzAgNTAgTDExNSA4MCBMOTUgNzAgTDEwMCA5MCBMODAgODAgTDYwIDkwIEw2NSA3MCBMNDUgODAgTDYwIDUwIEw0MCA2MCBMNTAgMzAgTDcwIDUwIEw3MCAyMCBaIiBmaWxsPSIjYzA0MGEwIiBvcGFjaXR5PSIwLjE1IiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8dGV4dCB4PSIzMCIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2MwNDBhMCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjMiPkZSRUUgRklSRTwvdGV4dD4KCjwvc3ZnPg==" alt="Free Fire"/></div>
+      <div class="game-label"><span>FREE FIRE</span><span class="tag">Mobile</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('pubg')">
+      <div class="game-bg game-bg-pubg"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxMjBlMDIiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzJlMjIwNiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzFhMTYwNCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiNjOGEwMjAiIG9wYWNpdHk9IjAuMjUiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxyZWN0IHg9IjE5MCIgeT0iNDAiIHdpZHRoPSI4MCIgaGVpZ2h0PSI2MCIgcng9IjQiIGZpbGw9IiM0YTNhMTAiIG9wYWNpdHk9IjAuNSIvPgogIDxsaW5lIHgxPSIxOTAiIHkxPSI0MCIgeDI9IjI3MCIgeTI9IjQwIiBzdHJva2U9IiNjOGEwMjAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC40Ii8+CiAgPGxpbmUgeDE9IjE5MCIgeTE9IjEwMCIgeDI9IjI3MCIgeTI9IjEwMCIgc3Ryb2tlPSIjYzhhMDIwIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNCIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjcwIiByPSIxMiIgZmlsbD0iI2M4YTAyMCIgb3BhY2l0eT0iMC4zIi8+CiAgPHBhdGggZD0iTTIxMCAxMDAgTDIxNSAxMzAgTDI0NSAxMzAgTDI1MCAxMDAgWiIgZmlsbD0iIzRhM2ExMCIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTQ1IiByPSIzMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzhhMDIwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4zIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTQ1IiByPSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzhhMDIwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMiIvPgogIDxwYXRoIGQ9Ik04MCAzMCBMOTAgMTAgTDkwIDUwIEw4MCAzMCBaIiBmaWxsPSIjYzhhMDIwIiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iOTAiIHkxPSIzMCIgeDI9IjkwIiB5Mj0iOTAiIHN0cm9rZT0iI2M4YTAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjQiLz4KICA8dGV4dCB4PSIzMCIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSI1NiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2M4YTAyMCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjQiPlBVQkc8L3RleHQ+Cgo8L3N2Zz4=" alt="PUBG"/></div>
+      <div class="game-label"><span>PUBG</span><span class="tag">Battle Royale</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('codm')">
+      <div class="game-bg game-bg-codm"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDA4MTAiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMTAyMCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MGMxOCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjEwMCIgcj0iMTAwIiBmaWxsPSIjMjAzMDgwIiBvcGFjaXR5PSIwLjMiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjEwMCIgcj0iNjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzQwNjBjMCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8bGluZSB4MT0iMTQ1IiB5MT0iMTAwIiB4Mj0iMzE1IiB5Mj0iMTAwIiBzdHJva2U9IiM0MDYwYzAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iMjMwIiB5MT0iMTUiIHgyPSIyMzAiIHkyPSIxODUiIHN0cm9rZT0iIzQwNjBjMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNCIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjEwMCIgcj0iMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzgwOTBlMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8cGF0aCBkPSJNMTk1IDY1IEwyMTUgNTAgTDIzMCA2MCBMMjQ1IDUwIEwyNjUgNjUgTDI2MCA4NSBMMjMwIDgwIEwyMDAgODUgWiIgZmlsbD0iIzIwMzA4MCIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iNjAiIHI9IjgiIGZpbGw9IiM0MDYwYzAiIG9wYWNpdHk9IjAuNCIvPgogIDxsaW5lIHgxPSI4NSIgeTE9IjY1IiB4Mj0iMTc1IiB5Mj0iODUiIHN0cm9rZT0iIzQwNjBjMCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8bGluZSB4MT0iMjg1IiB5MT0iODUiIHgyPSIzODAiIHkyPSI3MCIgc3Ryb2tlPSIjNDA2MGMwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMyIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjM4IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjNDA2MGMwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMyI+Q09EIE1PQklMRTwvdGV4dD4KCjwvc3ZnPg==" alt="CoD Mobile"/></div>
+      <div class="game-label"><span>COD MOBILE</span><span class="tag">Mobile</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('coc')">
+      <div class="game-bg game-bg-coc"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDBlMDIiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMWUwNCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MTIwNCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiMyYTYwMTAiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPHJlY3QgeD0iMTcwIiB5PSI2MCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMDAiIHJ4PSI0IiBmaWxsPSIjMWEzYTA4IiBvcGFjaXR5PSIwLjUiLz4KICA8cmVjdCB4PSIxNjAiIHk9IjQwIiB3aWR0aD0iMzAiIGhlaWdodD0iNjAiIHJ4PSIzIiBmaWxsPSIjMWEzYTA4IiBvcGFjaXR5PSIwLjYiLz4KICA8cmVjdCB4PSIyNzAiIHk9IjQwIiB3aWR0aD0iMzAiIGhlaWdodD0iNjAiIHJ4PSIzIiBmaWxsPSIjMWEzYTA4IiBvcGFjaXR5PSIwLjYiLz4KICA8cmVjdCB4PSIxNjUiIHk9IjM1IiB3aWR0aD0iMjAiIGhlaWdodD0iMTIiIHJ4PSIyIiBmaWxsPSIjMmE1MDEwIiBvcGFjaXR5PSIwLjciLz4KICA8cmVjdCB4PSIyNzUiIHk9IjM1IiB3aWR0aD0iMjAiIGhlaWdodD0iMTIiIHJ4PSIyIiBmaWxsPSIjMmE1MDEwIiBvcGFjaXR5PSIwLjciLz4KICA8cmVjdCB4PSIxODUiIHk9IjU1IiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjEyIiByeD0iMiIgZmlsbD0iIzJhNTAxMCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBhdGggZD0iTTE5NSA5MCBMMjI1IDcwIEwyNTUgOTAgTDI1NSAxNjAgTDE5NSAxNjAgWiIgZmlsbD0iIzRhODAyMCIgb3BhY2l0eT0iMC4yNSIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTAwIiByPSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjODBjMDQwIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNCIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjMwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjODBjMDQwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+Q0xBU0ggT0YgQ0xBTlM8L3RleHQ+Cgo8L3N2Zz4=" alt="Clash of Clans"/></div>
+      <div class="game-label"><span>CLASH OF CLANS</span><span class="tag">Strategy</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('fortnite')">
+      <div class="game-bg game-bg-fortnite"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNjBjMWUiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBlMWEzYSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBhMTAzMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjcwIiByPSIxMDAiIGZpbGw9IiMxYTQwYzAiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTA4IiByPSI4MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDA3MGUwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4zIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTA4IiByPSI1NSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjA1MGIwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMjUiLz4KICA8cGF0aCBkPSJNMjIwIDIwIEwyNDAgMjAgTDI1MCA1MCBMMjQ1IDgwIEwyMzUgNjUgTDIzMCA4NSBMMjI1IDY1IEwyMTUgODAgTDIxMCA1MCBaIiBmaWxsPSIjNjA4MGYwIiBvcGFjaXR5PSIwLjQiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iNDAiIHI9IjIiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjciLz4KICA8Y2lyY2xlIGN4PSIxMzAiIGN5PSIyNSIgcj0iMS41IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMTcwIiBjeT0iMzUiIHI9IjIuNSIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNiIvPgogIDxjaXJjbGUgY3g9IjMwMCIgY3k9IjIwIiByPSIyIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43Ii8+CiAgPGNpcmNsZSBjeD0iMzgwIiBjeT0iMzUiIHI9IjEuNSIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNSIvPgogIDxjaXJjbGUgY3g9IjQyMCIgY3k9IjE1IiByPSIyIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC42Ii8+CiAgPHRleHQgeD0iMzAiIHk9IjE1NSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDQiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiM2MDgwZjAiIG9wYWNpdHk9IjAuMTgiIGxldHRlci1zcGFjaW5nPSIzIj5GT1JUTklURTwvdGV4dD4KCjwvc3ZnPg==" alt="Fortnite"/></div>
+      <div class="game-label"><span>FORTNITE</span><span class="tag">Battle Royale</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('valorant')">
+      <div class="game-bg game-bg-valorant"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwZTA0MDQiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzIwMDgwOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzEwMDQwNiIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSI5MCIgZmlsbD0iI2MwMTAyMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8cGF0aCBkPSJNMjAwIDMwIEwyMzAgMTAwIEwyNjAgMzAgTDI4MCAzMCBMMjMwIDEzMCBMMTgwIDMwIFoiIGZpbGw9IiNmZjIwNDAiIG9wYWNpdHk9IjAuMzUiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxwYXRoIGQ9Ik0yMDAgMzAgTDIzMCAxMDAgTDI2MCAzMCBMMjgwIDMwIEwyMzAgMTMwIEwxODAgMzAgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmY0MDYwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC40Ii8+CiAgPGxpbmUgeDE9IjE1NSIgeTE9IjkwIiB4Mj0iMzA1IiB5Mj0iOTAiIHN0cm9rZT0iI2ZmMjA0MCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSI5MCIgcj0iNiIgZmlsbD0iI2ZmMjA0MCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSIzNjAsNTAgMzgwLDEwMCAzNDAsMTAwIiBmaWxsPSIjYzAxMDIwIiBvcGFjaXR5PSIwLjMiLz4KICA8cG9seWdvbiBwb2ludHM9IjM3MCw2MCAzODUsOTUgMzU1LDk1IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZjQwNjAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8dGV4dCB4PSIzMCIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSI0NCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2ZmNDA2MCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjMiPlZBTE9SQU5UPC90ZXh0PgoKPC9zdmc+" alt="Valorant"/></div>
+      <div class="game-label"><span>VALORANT</span><span class="tag">Hot</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    <div class="game-card" onclick="openGameDetail('lol')">
+      <div class="game-bg game-bg-lol"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDA4MGUiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMTQzMCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MGMyMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiMwYTMwYTAiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iOTUiIHI9IjY1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjOGE4MjAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC4zNSIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9Ijk1IiByPSI0OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDA4MGMwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMjUiLz4KICA8cGF0aCBkPSJNMjE1IDQwIEwyMzAgNTUgTDI0NSA0MCBMMjU1IDU1IEwyNDUgNzAgTDIzMCA2MCBMMjE1IDcwIEwyMDUgNTUgWiIgZmlsbD0iI2M4YTgyMCIgb3BhY2l0eT0iMC40IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KICA8bGluZSB4MT0iMjMwIiB5MT0iNTUiIHgyPSIyMzAiIHkyPSIxNDAiIHN0cm9rZT0iI2M4YTgyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjMiLz4KICA8bGluZSB4MT0iMTkwIiB5MT0iNzUiIHgyPSIyNzAiIHkyPSIxMTUiIHN0cm9rZT0iIzQwODBjMCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjI1Ii8+CiAgPGxpbmUgeDE9IjI3MCIgeTE9Ijc1IiB4Mj0iMTkwIiB5Mj0iMTE1IiBzdHJva2U9IiM0MDgwYzAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDxjaXJjbGUgY3g9IjkwIiBjeT0iODAiIHI9IjMwIiBmaWxsPSJub25lIiBzdHJva2U9IiNjOGE4MjAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4zIi8+CiAgPGNpcmNsZSBjeD0iMzcwIiBjeT0iODAiIHI9IjI1IiBmaWxsPSJub25lIiBzdHJva2U9IiM0MDgwYzAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjNDA4MGMwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+TEVBR1VFIE9GIExFR0VORFM8L3RleHQ+Cgo8L3N2Zz4=" alt="League of Legends"/></div>
+      <div class="game-label"><span>LEAGUE OF LEGENDS</span><span class="tag">MOBA</span></div>
+      <div class="game-hover-btn"><span>BOOST NOW →</span></div>
+    </div>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <div style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="section" id="how-it-works">
+      <div class="section-title" style="text-align:center">How It <span>Works</span></div>
+      <p class="section-sub" style="text-align:center">Simple 4-step process to boost your rank</p>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <div class="step-icon">🎮</div>
+          <h3>Select Your Game</h3>
+          <p>Browse our collection of 12+ supported games and choose the one you want to boost.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <div class="step-icon">⚙️</div>
+          <h3>Pick Your Package</h3>
+          <p>Choose from Starter, Pro, or Elite boost packages tailored to your goals and budget.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <div class="step-icon">💳</div>
+          <h3>Secure Checkout</h3>
+          <p>Complete your order safely with our encrypted checkout system.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <div class="step-icon">🏆</div>
+          <h3>Enjoy Your Rank</h3>
+          <p>Our expert booster delivers results fast. Track progress via live stream and chat.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Why Choose Us -->
+  <div class="section" id="why-us">
+    <div class="section-title">Why Choose <span>ApexBoost</span></div>
+    <div class="why-grid">
+      <div class="why-card"><div class="why-icon">🔒</div><h3>100% Safe & Secure</h3><p>All boosters use VPN and offline mode to protect your account. We never share your data.</p></div>
+      <div class="why-card"><div class="why-icon">⚡</div><h3>Lightning Fast Delivery</h3><p>Orders start within 30 minutes. Most boosts are completed within 24 hours.</p></div>
+      <div class="why-card"><div class="why-icon">🎯</div><h3>Professional Boosters</h3><p>All our boosters are verified top-ranked players — Immortal, Grandmaster, and above.</p></div>
+      <div class="why-card"><div class="why-icon">💬</div><h3>24/7 Live Support</h3><p>Our customer support team is available around the clock via live chat and Discord.</p></div>
+      <div class="why-card"><div class="why-icon">💰</div><h3>Money-Back Guarantee</h3><p>Not happy with results? We offer a full refund within 7 days, no questions asked.</p></div>
+      <div class="why-card"><div class="why-icon">📺</div><h3>Live Stream Option</h3><p>Watch your boost happen in real time via private stream — you stay in full control.</p></div>
+    </div>
+  </div>
+
+  <!-- Testimonials -->
+  <div style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="section">
+      <div class="section-title" style="text-align:center">What Our <span>Customers Say</span></div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text">"Went from Silver 2 to Platinum 1 in Valorant in just 4 days. The booster was super professional and even gave me tips to maintain my rank. 100% recommend!"</p>
+          <div class="testimonial-author"><div class="author-avatar">SN</div><div><div class="author-name">ShadowNova</div><div class="author-game">Valorant • Platinum I</div></div></div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text">"Used ApexBoost for my League account. Got from Gold 4 to Diamond 3. Fast delivery, live stream was awesome. I could literally watch myself rank up!"</p>
+          <div class="testimonial-author"><div class="author-avatar">KX</div><div><div class="author-name">KaiserX</div><div class="author-game">League of Legends • Diamond III</div></div></div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p class="testimonial-text">"Best boosting service I've tried. Ordered the Elite package for PUBG, got amazing results. Customer support responded instantly when I had questions."</p>
+          <div class="testimonial-author"><div class="author-avatar">ZF</div><div><div class="author-name">ZeroFrag</div><div class="author-game">PUBG • Platinum League</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA Banner -->
+  <div class="cta-banner">
+    <h2>Ready to <span style="color:var(--green)">Level Up?</span></h2>
+    <p>Join 50,000+ players who already boosted their rank with ApexBoost</p>
+    <div class="cta-btns">
+      <button class="btn btn-green btn-lg" onclick="showPage('games')">START BOOSTING NOW →</button>
+      <button class="btn btn-outline btn-lg" onclick="showPage('pricing')">VIEW PRICING</button>
+    </div>
+  </div>
+
+</div><!-- /page-home -->
+
+<!-- ═══════════════════════════════════════════════════════ PAGE: GAMES ══ -->
+<div class="page" id="page-games">
+  <div class="page-hero">
+    <h1>Choose Your <span style="color:var(--green)">Game</span></h1>
+    <p>Select a game below to view boost packages and pricing</p>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterGames('all',this)">All Games</button>
+    <button class="filter-btn" onclick="filterGames('fps',this)">FPS</button>
+    <button class="filter-btn" onclick="filterGames('br',this)">Battle Royale</button>
+    <button class="filter-btn" onclick="filterGames('mobile',this)">Mobile</button>
+    <button class="filter-btn" onclick="filterGames('moba',this)">MOBA</button>
+    <button class="filter-btn" onclick="filterGames('mmorpg',this)">MMORPG</button>
+    <button class="filter-btn" onclick="filterGames('strategy',this)">Strategy</button>
+    <button class="filter-btn" onclick="filterGames('survival',this)">Survival</button>
+    <button class="filter-btn" onclick="filterGames('adventure',this)">Adventure</button>
+  </div>
+  <div class="catalog-grid" id="catalog-grid">
+
+    <div class="catalog-card" data-category="survival" data-id="rust">
+      <div class="catalog-img" onclick="openGameDetail('rust')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYTBlMDQiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzNkMWUwNiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzFmMTAwOCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM2MCIgY3k9IjYwIiByPSI5MCIgZmlsbD0iI2M0NWUwYSIgb3BhY2l0eT0iMC4yNSIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTYwIiByPSI3MCIgZmlsbD0iIzhiM2EwMCIgb3BhY2l0eT0iMC4yIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8Y2lyY2xlIGN4PSIzNzAiIGN5PSIxMDgiIHI9IjU1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjNDVlMGEiIHN0cm9rZS13aWR0aD0iOCIgb3BhY2l0eT0iMC4zNSIvPgogIDxjaXJjbGUgY3g9IjM3MCIgY3k9IjEwOCIgcj0iMzgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2M0NWUwYSIgc3Ryb2tlLXdpZHRoPSI1IiBvcGFjaXR5PSIwLjI1Ii8+CiAgPGNpcmNsZSBjeD0iMzcwIiBjeT0iMTA4IiByPSIxOCIgZmlsbD0iIzhiM2EwMCIgb3BhY2l0eT0iMC41Ii8+CiAgPHJlY3QgeD0iMzU2IiB5PSI0OCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjE0IiByeD0iNCIgZmlsbD0iI2M0NWUwYSIgb3BhY2l0eT0iMC40IiB0cmFuc2Zvcm09InJvdGF0ZSgwIDM3MCAxMDgpIi8+CiAgPHJlY3QgeD0iMzU2IiB5PSI0OCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjE0IiByeD0iNCIgZmlsbD0iI2M0NWUwYSIgb3BhY2l0eT0iMC40IiB0cmFuc2Zvcm09InJvdGF0ZSg0NSAzNzAgMTA4KSIvPgogIDxyZWN0IHg9IjM1NiIgeT0iNDgiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxNCIgcng9IjQiIGZpbGw9IiNjNDVlMGEiIG9wYWNpdHk9IjAuNCIgdHJhbnNmb3JtPSJyb3RhdGUoOTAgMzcwIDEwOCkiLz4KICA8cmVjdCB4PSIzNTYiIHk9IjQ4IiB3aWR0aD0iMjgiIGhlaWdodD0iMTQiIHJ4PSI0IiBmaWxsPSIjYzQ1ZTBhIiBvcGFjaXR5PSIwLjQiIHRyYW5zZm9ybT0icm90YXRlKDEzNSAzNzAgMTA4KSIvPgogIDxsaW5lIHgxPSI2MCIgeTE9IjgwIiB4Mj0iMTQwIiB5Mj0iODAiIHN0cm9rZT0iI2UwNzAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iMTAwIiB5MT0iNDAiIHgyPSIxMDAiIHkyPSIxMjAiIHN0cm9rZT0iI2UwNzAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4MCIgcj0iMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2UwNzAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8dGV4dCB4PSIzNiIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSI1NiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2UwNzAyMCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjQiPlJVU1Q8L3RleHQ+Cgo8L3N2Zz4=" alt="Rust"/>
+        <span class="catalog-tag">Popular</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">Rust</div>
+        <div class="catalog-desc">Dominate Rust servers with expert boosters. Farm resources, raid bases, and clim...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$9.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('rust')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="adventure" data-id="sot">
+      <div class="catalog-img" onclick="openGameDetail('sot')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDBmMWUiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMjA0MCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MTgzMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM4MCIgY3k9IjEwMCIgcj0iMTAwIiBmaWxsPSIjMGE1ZmE4IiBvcGFjaXR5PSIwLjMiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxwYXRoIGQ9Ik0wIDE0MCBRNjAgMTEwIDEyMCAxNDAgUTE4MCAxNzAgMjQwIDE0MCBRMzAwIDExMCAzNjAgMTQwIFE0MjAgMTcwIDQ2MCAxNDAgTDQ2MCAyMTUgTDAgMjE1WiIgZmlsbD0iIzBhNGE4MCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBhdGggZD0iTTAgMTYwIFE4MCAxMzAgMTYwIDE2MCBRMjQwIDE5MCAzMjAgMTYwIFE0MDAgMTMwIDQ2MCAxNjAgTDQ2MCAyMTUgTDAgMjE1WiIgZmlsbD0iIzA2MzY2MCIgb3BhY2l0eT0iMC42Ii8+CiAgPHBhdGggZD0iTTI4MCA4MCBMMzAwIDE0NSBMMzgwIDE0NSBMNDAwIDgwIFoiIGZpbGw9IiMwYTJhNGEiIG9wYWNpdHk9IjAuNyIvPgogIDxsaW5lIHgxPSIzNDAiIHkxPSIzMCIgeDI9IjM0MCIgeTI9IjE0NSIgc3Ryb2tlPSIjYjg4NjBiIiBzdHJva2Utd2lkdGg9IjMiIG9wYWNpdHk9IjAuNiIvPgogIDxwb2x5Z29uIHBvaW50cz0iMzQwLDMyIDM5MCw3MiAzNDAsNzIiIGZpbGw9IiNkNGEwMjAiIG9wYWNpdHk9IjAuNSIvPgogIDxwb2x5Z29uIHBvaW50cz0iMzQwLDMyIDI5MCw2MiAzNDAsNjIiIGZpbGw9IiNkNGEwMjAiIG9wYWNpdHk9IjAuNCIvPgogIDxjaXJjbGUgY3g9IjkwIiBjeT0iMTAwIiByPSI0NSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGE5ZmQ0IiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMzUiLz4KICA8bGluZSB4MT0iOTAiIHkxPSI1OCIgeDI9IjkwIiB5Mj0iMTQyIiBzdHJva2U9IiM0YTlmZDQiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iNDgiIHkxPSIxMDAiIHgyPSIxMzIiIHkyPSIxMDAiIHN0cm9rZT0iIzRhOWZkNCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNCIvPgogIDxwb2x5Z29uIHBvaW50cz0iOTAsNTggODUsNzUgOTUsNzUiIGZpbGw9IiNkNGEwMjAiIG9wYWNpdHk9IjAuNiIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjNGE5ZmQ0IiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+U0VBIE9GIFRISUVWRVM8L3RleHQ+Cgo8L3N2Zz4=" alt="Sea of Thieves"/>
+        <span class="catalog-tag">Adventure</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">Sea of Thieves</div>
+        <div class="catalog-desc">Complete tall tales, earn gold, and achieve Pirate Legend status with our season...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$12.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('sot')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="mmorpg" data-id="ffxiv">
+      <div class="catalog-img" onclick="openGameDetail('ffxiv')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwZTA0MTgiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzFlMGEzNiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBhMGUyNCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiM3YTIwYzgiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTQwIiByPSI3MCIgZmlsbD0iIzNhMDg4MCIgb3BhY2l0eT0iMC4yNSIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPHBvbHlnb24gcG9pbnRzPSIyMzAsMjAgMjQ1LDYwIDI5MCw2MCAyNTUsODUgMjY4LDEzMCAyMzAsMTA1IDE5MiwxMzAgMjA1LDg1IDE3MCw2MCAyMTUsNjAiIGZpbGw9IiNmZmQ3MDAiIG9wYWNpdHk9IjAuMjIiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjEwOCIgcj0iNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2EwNTBlMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMzUiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSIxMDgiIHI9IjQwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmQ3MDAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDxwb2x5Z29uIHBvaW50cz0iOTAsNDAgMTAwLDcwIDEzMCw3MCAxMDcsODggMTE2LDExOCA5MCwxMDAgNjQsMTE4IDczLDg4IDUwLDcwIDgwLDcwIiBmaWxsPSIjYzA2MGYwIiBvcGFjaXR5PSIwLjMiLz4KICA8cG9seWdvbiBwb2ludHM9IjM3MCw2MCAzNzgsODQgNDAzLDg0IDM4Myw5OCAzOTEsMTIyIDM3MCwxMDggMzQ5LDEyMiAzNTcsOTggMzM3LDg0IDM2Miw4NCIgZmlsbD0iI2ZmZDcwMCIgb3BhY2l0eT0iMC4yNSIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjMwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjYzA2MGYwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+RklOQUwgRkFOVEFTWSBYSVY8L3RleHQ+Cgo8L3N2Zz4=" alt="Final Fantasy XIV"/>
+        <span class="catalog-tag">MMORPG</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">Final Fantasy XIV</div>
+        <div class="catalog-desc">Level up characters fast, complete Savage raids, and unlock exclusive gear and r...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$14.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('ffxiv')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="fps" data-id="paladins">
+      <div class="catalog-img" onclick="openGameDetail('paladins')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyMDAwMDgiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzRhMDAxOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzE4MDAxMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSI5MCIgZmlsbD0iI2MwMDAzMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8cGF0aCBkPSJNMjMwIDIwIEwyNzAgMjAgTDI5MCA1MCBMMjcwIDgwIEwyMzAgODAgTDIxMCA1MCBaIiBmaWxsPSIjYzAwMDMwIiBvcGFjaXR5PSIwLjMiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxwYXRoIGQ9Ik0yMzAgMjAgTDI3MCAyMCBMMjkwIDUwIEwyNzAgODAgTDIzMCA4MCBMMjEwIDUwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmNDA2MCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjQiLz4KICA8Y2lyY2xlIGN4PSIyNTAiIGN5PSI1MCIgcj0iMTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmNDA2MCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iMjUwIiB5MT0iMzUiIHgyPSIyNTAiIHkyPSI2NSIgc3Ryb2tlPSIjZmY0MDYwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC40Ii8+CiAgPGxpbmUgeDE9IjIzNSIgeTE9IjUwIiB4Mj0iMjY1IiB5Mj0iNTAiIHN0cm9rZT0iI2ZmNDA2MCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNCIvPgogIDxwYXRoIGQ9Ik04MCAzMCBMMTAwIDMwIEwxMTAgNTAgTDEwMCAxMTAgTDgwIDExMCBMNzAgNTAgWiIgZmlsbD0iIzhiMDAyMCIgb3BhY2l0eT0iMC40Ii8+CiAgPHJlY3QgeD0iNjAiIHk9IjEwOCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjgiIHJ4PSIyIiBmaWxsPSIjYzAwMDMwIiBvcGFjaXR5PSIwLjM1Ii8+CiAgPHRleHQgeD0iMzAiIHk9IjE1NSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDQiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiNmZjQwNjAiIG9wYWNpdHk9IjAuMTgiIGxldHRlci1zcGFjaW5nPSIzIj5QQUxBRElOUzwvdGV4dD4KCjwvc3ZnPg==" alt="Paladins"/>
+        <span class="catalog-tag">FPS</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">Paladins</div>
+        <div class="catalog-desc">Rank up from Bronze to Grandmaster with our experienced Paladins Immortal+ boost...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$8.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('paladins')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="fps" data-id="bf2042">
+      <div class="catalog-img" onclick="openGameDetail('bf2042')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNjBlMDQiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBlMWUwOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA4MTIwOCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjcwIiByPSI5MCIgZmlsbD0iIzQwNjAyMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8bGluZSB4MT0iMCIgeTE9IjUwIiB4Mj0iNDYwIiB5Mj0iNTAiIHN0cm9rZT0iIzgwYzA0MCIgc3Ryb2tlLXdpZHRoPSIwLjUiIG9wYWNpdHk9IjAuMiIvPgogIDxsaW5lIHgxPSIwIiB5MT0iMTAwIiB4Mj0iNDYwIiB5Mj0iMTAwIiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMC41IiBvcGFjaXR5PSIwLjIiLz4KICA8bGluZSB4MT0iMCIgeTE9IjE1MCIgeDI9IjQ2MCIgeTI9IjE1MCIgc3Ryb2tlPSIjODBjMDQwIiBzdHJva2Utd2lkdGg9IjAuNSIgb3BhY2l0eT0iMC4yIi8+CiAgPHBhdGggZD0iTTI4MCA4MCBMMzYwIDYwIEw0MDAgNzUgTDM4MCAxMDAgTDMwMCAxMTAgWiIgZmlsbD0iIzIwNDAxMCIgb3BhY2l0eT0iMC42Ii8+CiAgPGNpcmNsZSBjeD0iMzIwIiBjeT0iNTUiIHI9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iMzIwIiB5MT0iMzgiIHgyPSIzMjAiIHkyPSI3MiIgc3Ryb2tlPSIjODBjMDQwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuNCIvPgogIDxsaW5lIHgxPSIzMDMiIHkxPSI1NSIgeDI9IjMzNyIgeTI9IjU1IiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC40Ii8+CiAgPGNpcmNsZSBjeD0iMzIwIiBjeT0iNTUiIHI9IjQiIGZpbGw9IiM4MGMwNDAiIG9wYWNpdHk9IjAuNSIvPgogIDxwYXRoIGQ9Ik04MCA2MCBMNjAgMTAwIEwxMDAgMTEwIEwxMzAgODUgWiIgZmlsbD0iIzIwNDAxMCIgb3BhY2l0eT0iMC41Ii8+CiAgPGxpbmUgeDE9Ijk1IiB5MT0iNjAiIHgyPSI5NSIgeTI9IjI1IiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC40Ii8+CiAgPHRleHQgeD0iMzAiIHk9IjE1NSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiM4MGMwNDAiIG9wYWNpdHk9IjAuMTgiIGxldHRlci1zcGFjaW5nPSIzIj5CRiAyMDQyPC90ZXh0PgoKPC9zdmc+" alt="Battlefield 2042"/>
+        <span class="catalog-tag">FPS</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">Battlefield 2042</div>
+        <div class="catalog-desc">Unlock all operators, max weapon mastery, and dominate ranked play in Battlefiel...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$11.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('bf2042')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="mobile" data-id="freefire">
+      <div class="catalog-img" onclick="openGameDetail('freefire')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYTA0MjgiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzJlMDg1MCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzE4MDQzMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjgwIiByPSI5MCIgZmlsbD0iIzgwMjBjMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSIxNDAiIHI9IjcwIiBmaWxsPSIjYzA1MDEwIiBvcGFjaXR5PSIwLjIiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxwYXRoIGQ9Ik0yMzAgMTIwIEwyMTggODUgTDIyNSA5MCBMMjMwIDcwIEwyMzUgOTAgTDI0MiA4NSBaIiBmaWxsPSIjZmY2MDIwIiBvcGFjaXR5PSIwLjYiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxwYXRoIGQ9Ik0yMzAgMTIwIEwyMTUgODAgTDIyMiA4NiBMMjMwIDY1IEwyMzggODYgTDI0NSA4MCBaIiBmaWxsPSIjZmY4MDQwIiBvcGFjaXR5PSIwLjQiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSIxNDAiIHI9IjUwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZjYwMjAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjMiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSIxNDAiIHI9IjM1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjMDQwYTAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDxwYXRoIGQ9Ik04MCA0MCBMMTAwIDIwIEwxMDAgNTAgTDEyMCAzMCBMMTEwIDYwIEwxMzAgNTAgTDExNSA4MCBMOTUgNzAgTDEwMCA5MCBMODAgODAgTDYwIDkwIEw2NSA3MCBMNDUgODAgTDYwIDUwIEw0MCA2MCBMNTAgMzAgTDcwIDUwIEw3MCAyMCBaIiBmaWxsPSIjYzA0MGEwIiBvcGFjaXR5PSIwLjE1IiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8dGV4dCB4PSIzMCIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2MwNDBhMCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjMiPkZSRUUgRklSRTwvdGV4dD4KCjwvc3ZnPg==" alt="Free Fire"/>
+        <span class="catalog-tag">Mobile</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">Free Fire</div>
+        <div class="catalog-desc">Rank push in Free Fire with pro players — from Bronze to Heroic in record time....</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$6.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('freefire')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="br" data-id="pubg">
+      <div class="catalog-img" onclick="openGameDetail('pubg')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxMjBlMDIiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzJlMjIwNiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzFhMTYwNCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiNjOGEwMjAiIG9wYWNpdHk9IjAuMjUiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxyZWN0IHg9IjE5MCIgeT0iNDAiIHdpZHRoPSI4MCIgaGVpZ2h0PSI2MCIgcng9IjQiIGZpbGw9IiM0YTNhMTAiIG9wYWNpdHk9IjAuNSIvPgogIDxsaW5lIHgxPSIxOTAiIHkxPSI0MCIgeDI9IjI3MCIgeTI9IjQwIiBzdHJva2U9IiNjOGEwMjAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC40Ii8+CiAgPGxpbmUgeDE9IjE5MCIgeTE9IjEwMCIgeDI9IjI3MCIgeTI9IjEwMCIgc3Ryb2tlPSIjYzhhMDIwIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNCIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjcwIiByPSIxMiIgZmlsbD0iI2M4YTAyMCIgb3BhY2l0eT0iMC4zIi8+CiAgPHBhdGggZD0iTTIxMCAxMDAgTDIxNSAxMzAgTDI0NSAxMzAgTDI1MCAxMDAgWiIgZmlsbD0iIzRhM2ExMCIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTQ1IiByPSIzMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzhhMDIwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4zIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTQ1IiByPSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzhhMDIwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMiIvPgogIDxwYXRoIGQ9Ik04MCAzMCBMOTAgMTAgTDkwIDUwIEw4MCAzMCBaIiBmaWxsPSIjYzhhMDIwIiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iOTAiIHkxPSIzMCIgeDI9IjkwIiB5Mj0iOTAiIHN0cm9rZT0iI2M4YTAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjQiLz4KICA8dGV4dCB4PSIzMCIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSI1NiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2M4YTAyMCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjQiPlBVQkc8L3RleHQ+Cgo8L3N2Zz4=" alt="PUBG"/>
+        <span class="catalog-tag">Battle Royale</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">PUBG</div>
+        <div class="catalog-desc">Increase your PUBG rank, improve K/D ratio, and get that chicken dinner streak g...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$9.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('pubg')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="mobile" data-id="codm">
+      <div class="catalog-img" onclick="openGameDetail('codm')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDA4MTAiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMTAyMCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MGMxOCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjEwMCIgcj0iMTAwIiBmaWxsPSIjMjAzMDgwIiBvcGFjaXR5PSIwLjMiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjEwMCIgcj0iNjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzQwNjBjMCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8bGluZSB4MT0iMTQ1IiB5MT0iMTAwIiB4Mj0iMzE1IiB5Mj0iMTAwIiBzdHJva2U9IiM0MDYwYzAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iMjMwIiB5MT0iMTUiIHgyPSIyMzAiIHkyPSIxODUiIHN0cm9rZT0iIzQwNjBjMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNCIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjEwMCIgcj0iMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzgwOTBlMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8cGF0aCBkPSJNMTk1IDY1IEwyMTUgNTAgTDIzMCA2MCBMMjQ1IDUwIEwyNjUgNjUgTDI2MCA4NSBMMjMwIDgwIEwyMDAgODUgWiIgZmlsbD0iIzIwMzA4MCIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iNjAiIHI9IjgiIGZpbGw9IiM0MDYwYzAiIG9wYWNpdHk9IjAuNCIvPgogIDxsaW5lIHgxPSI4NSIgeTE9IjY1IiB4Mj0iMTc1IiB5Mj0iODUiIHN0cm9rZT0iIzQwNjBjMCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8bGluZSB4MT0iMjg1IiB5MT0iODUiIHgyPSIzODAiIHkyPSI3MCIgc3Ryb2tlPSIjNDA2MGMwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMyIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjM4IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjNDA2MGMwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMyI+Q09EIE1PQklMRTwvdGV4dD4KCjwvc3ZnPg==" alt="CoD Mobile"/>
+        <span class="catalog-tag">Mobile</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">CoD Mobile</div>
+        <div class="catalog-desc">Reach Legendary rank in CoD Mobile BR and Multiplayer with Top 500 global player...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$7.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('codm')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="strategy" data-id="coc">
+      <div class="catalog-img" onclick="openGameDetail('coc')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDBlMDIiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMWUwNCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MTIwNCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiMyYTYwMTAiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPHJlY3QgeD0iMTcwIiB5PSI2MCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMDAiIHJ4PSI0IiBmaWxsPSIjMWEzYTA4IiBvcGFjaXR5PSIwLjUiLz4KICA8cmVjdCB4PSIxNjAiIHk9IjQwIiB3aWR0aD0iMzAiIGhlaWdodD0iNjAiIHJ4PSIzIiBmaWxsPSIjMWEzYTA4IiBvcGFjaXR5PSIwLjYiLz4KICA8cmVjdCB4PSIyNzAiIHk9IjQwIiB3aWR0aD0iMzAiIGhlaWdodD0iNjAiIHJ4PSIzIiBmaWxsPSIjMWEzYTA4IiBvcGFjaXR5PSIwLjYiLz4KICA8cmVjdCB4PSIxNjUiIHk9IjM1IiB3aWR0aD0iMjAiIGhlaWdodD0iMTIiIHJ4PSIyIiBmaWxsPSIjMmE1MDEwIiBvcGFjaXR5PSIwLjciLz4KICA8cmVjdCB4PSIyNzUiIHk9IjM1IiB3aWR0aD0iMjAiIGhlaWdodD0iMTIiIHJ4PSIyIiBmaWxsPSIjMmE1MDEwIiBvcGFjaXR5PSIwLjciLz4KICA8cmVjdCB4PSIxODUiIHk9IjU1IiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjEyIiByeD0iMiIgZmlsbD0iIzJhNTAxMCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBhdGggZD0iTTE5NSA5MCBMMjI1IDcwIEwyNTUgOTAgTDI1NSAxNjAgTDE5NSAxNjAgWiIgZmlsbD0iIzRhODAyMCIgb3BhY2l0eT0iMC4yNSIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTAwIiByPSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjODBjMDQwIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNCIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjMwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjODBjMDQwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+Q0xBU0ggT0YgQ0xBTlM8L3RleHQ+Cgo8L3N2Zz4=" alt="Clash of Clans"/>
+        <span class="catalog-tag">Strategy</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">Clash of Clans</div>
+        <div class="catalog-desc">Reach Legends League, max your Town Hall, and destroy enemies in Clan War League...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$5.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('coc')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="br" data-id="fortnite">
+      <div class="catalog-img" onclick="openGameDetail('fortnite')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNjBjMWUiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBlMWEzYSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBhMTAzMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjcwIiByPSIxMDAiIGZpbGw9IiMxYTQwYzAiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTA4IiByPSI4MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDA3MGUwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4zIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTA4IiByPSI1NSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjA1MGIwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMjUiLz4KICA8cGF0aCBkPSJNMjIwIDIwIEwyNDAgMjAgTDI1MCA1MCBMMjQ1IDgwIEwyMzUgNjUgTDIzMCA4NSBMMjI1IDY1IEwyMTUgODAgTDIxMCA1MCBaIiBmaWxsPSIjNjA4MGYwIiBvcGFjaXR5PSIwLjQiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iNDAiIHI9IjIiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjciLz4KICA8Y2lyY2xlIGN4PSIxMzAiIGN5PSIyNSIgcj0iMS41IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMTcwIiBjeT0iMzUiIHI9IjIuNSIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNiIvPgogIDxjaXJjbGUgY3g9IjMwMCIgY3k9IjIwIiByPSIyIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43Ii8+CiAgPGNpcmNsZSBjeD0iMzgwIiBjeT0iMzUiIHI9IjEuNSIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNSIvPgogIDxjaXJjbGUgY3g9IjQyMCIgY3k9IjE1IiByPSIyIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC42Ii8+CiAgPHRleHQgeD0iMzAiIHk9IjE1NSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDQiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiM2MDgwZjAiIG9wYWNpdHk9IjAuMTgiIGxldHRlci1zcGFjaW5nPSIzIj5GT1JUTklURTwvdGV4dD4KCjwvc3ZnPg==" alt="Fortnite"/>
+        <span class="catalog-tag">Battle Royale</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">Fortnite</div>
+        <div class="catalog-desc">Win games, complete all Battle Pass challenges, and unlock exclusive cosmetics f...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$8.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('fortnite')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="fps" data-id="valorant">
+      <div class="catalog-img" onclick="openGameDetail('valorant')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwZTA0MDQiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzIwMDgwOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzEwMDQwNiIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSI5MCIgZmlsbD0iI2MwMTAyMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8cGF0aCBkPSJNMjAwIDMwIEwyMzAgMTAwIEwyNjAgMzAgTDI4MCAzMCBMMjMwIDEzMCBMMTgwIDMwIFoiIGZpbGw9IiNmZjIwNDAiIG9wYWNpdHk9IjAuMzUiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxwYXRoIGQ9Ik0yMDAgMzAgTDIzMCAxMDAgTDI2MCAzMCBMMjgwIDMwIEwyMzAgMTMwIEwxODAgMzAgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmY0MDYwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC40Ii8+CiAgPGxpbmUgeDE9IjE1NSIgeTE9IjkwIiB4Mj0iMzA1IiB5Mj0iOTAiIHN0cm9rZT0iI2ZmMjA0MCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSI5MCIgcj0iNiIgZmlsbD0iI2ZmMjA0MCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSIzNjAsNTAgMzgwLDEwMCAzNDAsMTAwIiBmaWxsPSIjYzAxMDIwIiBvcGFjaXR5PSIwLjMiLz4KICA8cG9seWdvbiBwb2ludHM9IjM3MCw2MCAzODUsOTUgMzU1LDk1IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZjQwNjAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8dGV4dCB4PSIzMCIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSI0NCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2ZmNDA2MCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjMiPlZBTE9SQU5UPC90ZXh0PgoKPC9zdmc+" alt="Valorant"/>
+        <span class="catalog-tag">Hot</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">Valorant</div>
+        <div class="catalog-desc">Climb from Iron to Radiant with certified Immortal+ Valorant boosters. Safe and ...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$12.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('valorant')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+    <div class="catalog-card" data-category="moba" data-id="lol">
+      <div class="catalog-img" onclick="openGameDetail('lol')">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDA4MGUiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMTQzMCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MGMyMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiMwYTMwYTAiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iOTUiIHI9IjY1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjOGE4MjAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC4zNSIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9Ijk1IiByPSI0OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDA4MGMwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMjUiLz4KICA8cGF0aCBkPSJNMjE1IDQwIEwyMzAgNTUgTDI0NSA0MCBMMjU1IDU1IEwyNDUgNzAgTDIzMCA2MCBMMjE1IDcwIEwyMDUgNTUgWiIgZmlsbD0iI2M4YTgyMCIgb3BhY2l0eT0iMC40IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KICA8bGluZSB4MT0iMjMwIiB5MT0iNTUiIHgyPSIyMzAiIHkyPSIxNDAiIHN0cm9rZT0iI2M4YTgyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjMiLz4KICA8bGluZSB4MT0iMTkwIiB5MT0iNzUiIHgyPSIyNzAiIHkyPSIxMTUiIHN0cm9rZT0iIzQwODBjMCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjI1Ii8+CiAgPGxpbmUgeDE9IjI3MCIgeTE9Ijc1IiB4Mj0iMTkwIiB5Mj0iMTE1IiBzdHJva2U9IiM0MDgwYzAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDxjaXJjbGUgY3g9IjkwIiBjeT0iODAiIHI9IjMwIiBmaWxsPSJub25lIiBzdHJva2U9IiNjOGE4MjAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4zIi8+CiAgPGNpcmNsZSBjeD0iMzcwIiBjeT0iODAiIHI9IjI1IiBmaWxsPSJub25lIiBzdHJva2U9IiM0MDgwYzAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjNDA4MGMwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+TEVBR1VFIE9GIExFR0VORFM8L3RleHQ+Cgo8L3N2Zz4=" alt="League of Legends"/>
+        <span class="catalog-tag">MOBA</span>
+      </div>
+      <div class="catalog-info">
+        <div class="catalog-name">League of Legends</div>
+        <div class="catalog-desc">Reach your dream rank in LoL — from Iron to Challenger with Grandmaster+ players...</div>
+        <div class="catalog-footer">
+          <div class="catalog-price"><span class="from-label">from</span> <span class="price-val">$9.99</span></div>
+          <button class="btn btn-green btn-sm" onclick="openGameDetail('lol')">SELECT BOOST</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ PAGE: GAME DETAIL ══ -->
+<div class="page" id="page-game-detail">
+  <div class="detail-back" onclick="showPage('games')">← Back to All Games</div>
+  <div class="detail-layout">
+    <div class="detail-left">
+      <div class="detail-img"><img id="detail-img" src="" alt="game"/></div>
+      <div class="detail-game-name" id="detail-name"></div>
+      <div class="detail-game-desc" id="detail-desc"></div>
+      <div class="detail-badges">
+        <span class="badge green">✓ Safe &amp; Secure</span>
+        <span class="badge green">⚡ Fast Delivery</span>
+        <span class="badge green">💬 24/7 Support</span>
+        <span class="badge">Money-Back Guarantee</span>
+      </div>
+      <div style="margin-top:20px;padding:18px;background:var(--card);border:1px solid var(--border);border-radius:10px">
+        <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:12px">Why choose us for this game</div>
+        <div id="detail-why" style="font-size:13px;color:var(--muted);line-height:1.7"></div>
+      </div>
+    </div>
+    <div class="detail-right">
+      <div style="font-size:18px;font-weight:800;margin-bottom:16px">Select Your <span style="color:var(--green)">Package</span></div>
+      <div class="packages-grid" id="packages-grid"><!-- filled by JS --></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ PAGE: PRICING ══ -->
+<div class="page" id="page-pricing">
+  <div class="page-hero">
+    <h1>Simple <span style="color:var(--green)">Pricing</span></h1>
+    <p>No hidden fees — pick the plan that fits your goals</p>
+  </div>
+  <div class="section">
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tier">🥉 Starter</div>
+        <div class="price-amount"><sup>$</sup>9<span style="font-size:18px">.99</span></div>
+        <div class="price-desc">Perfect for trying out our service</div>
+        <ul class="price-features">
+          <li>5 guaranteed wins</li>
+          <li>Solo boost only</li>
+          <li>Standard priority</li>
+          <li>72h delivery</li>
+          <li>24/7 chat support</li>
+        </ul>
+        <button class="btn btn-outline btn-full" onclick="showPage('games')">GET STARTED</button>
+      </div>
+      <div class="price-card featured">
+        <div class="popular-badge">MOST POPULAR</div>
+        <div class="price-tier">🥈 Pro</div>
+        <div class="price-amount"><sup>$</sup>19<span style="font-size:18px">.99</span></div>
+        <div class="price-desc">Best value for rank improvement</div>
+        <ul class="price-features">
+          <li>15 guaranteed wins</li>
+          <li>Solo or Duo boost</li>
+          <li>High priority queue</li>
+          <li>24h delivery</li>
+          <li>Live stream option</li>
+          <li>VPN protection</li>
+        </ul>
+        <button class="btn btn-green btn-full" onclick="showPage('games')">GET STARTED</button>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">🥇 Elite</div>
+        <div class="price-amount"><sup>$</sup>34<span style="font-size:18px">.99</span></div>
+        <div class="price-desc">Maximum results, minimum wait</div>
+        <ul class="price-features">
+          <li>Unlimited wins</li>
+          <li>Duo boost included</li>
+          <li>Top priority queue</li>
+          <li>12h express delivery</li>
+          <li>HD live stream</li>
+          <li>VPN + offline mode</li>
+          <li>Dedicated booster</li>
+          <li>Money-back guarantee</li>
+        </ul>
+        <button class="btn btn-outline btn-full" onclick="showPage('games')">GET STARTED</button>
+      </div>
+    </div>
+
+    <!-- Pricing FAQ -->
+    <div style="margin-top:56px">
+      <div class="section-title">Frequently Asked <span>Questions</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="faq-grid">
+        <div class="why-card"><h3>Is boosting safe?</h3><p>Yes! We use VPNs matching your region and offline mode to protect your account. Our methods are discreet and undetectable.</p></div>
+        <div class="why-card"><h3>How fast is delivery?</h3><p>Orders typically start within 30 minutes. Completion time depends on your chosen package — from 12h for Elite to 72h for Starter.</p></div>
+        <div class="why-card"><h3>Can I watch the boost?</h3><p>Absolutely! Pro and Elite packages include a live stream option so you can watch every game in real time on a private stream.</p></div>
+        <div class="why-card"><h3>What if I'm not satisfied?</h3><p>We offer a full money-back guarantee within 7 days of order completion, no questions asked.</p></div>
+        <div class="why-card"><h3>Which games are supported?</h3><p>We currently support 12 popular titles including Valorant, League of Legends, PUBG, Fortnite, CoD Mobile, and more.</p></div>
+        <div class="why-card"><h3>How do I contact support?</h3><p>Our support team is available 24/7 via live chat on this site, Discord, or email. Average response time: under 3 minutes.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ PAGE: CHECKOUT ══ -->
+<div class="page" id="page-checkout">
+  <div class="page-hero" style="padding:32px 24px 28px">
+    <h1>🔐 Secure <span style="color:var(--green)">Checkout</span></h1>
+  </div>
+  <div class="checkout-layout">
+    <form onsubmit="submitOrder(event)">
+
+      <!-- Billing Info -->
+      <div class="checkout-form-box" style="margin-bottom:20px">
+        <h3>👤 Billing Information</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="order-fname" placeholder="John" required/>
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="order-lname" placeholder="Doe" required/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="order-email" placeholder="john@example.com" required/>
+        </div>
+        <div class="form-group">
+          <label>Discord Username (optional)</label>
+          <input type="text" id="order-discord" placeholder="YourName#1234"/>
+        </div>
+      </div>
+
+      <!-- Game Account -->
+      <div class="checkout-form-box" style="margin-bottom:20px">
+        <h3>🎮 Game Account Details</h3>
+        <div class="form-group">
+          <label>In-Game Username / ID</label>
+          <input type="text" id="order-ign" placeholder="Your in-game username" required/>
+        </div>
+        <div class="form-group">
+          <label>Current Rank / Level</label>
+          <input type="text" id="order-rank" placeholder="e.g. Gold 3, Level 45"/>
+        </div>
+        <div class="form-group">
+          <label>Special Instructions (optional)</label>
+          <input type="text" id="order-notes" placeholder="Any notes for your booster..."/>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="checkout-form-box">
+        <h3>💳 Payment Details</h3>
+        <div class="form-group">
+          <label>Cardholder Name</label>
+          <input type="text" id="order-name" placeholder="John Doe" required/>
+        </div>
+        <div class="form-group">
+          <label>Card Number</label>
+          <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19"
+            oninput="formatCard(this)" required/>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Expiry Date</label>
+            <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5"
+              oninput="formatExpiry(this)" required/>
+          </div>
+          <div class="form-group">
+            <label>CVV</label>
+            <input type="text" id="card-cvv" placeholder="123" maxlength="4" required/>
+          </div>
+        </div>
+        <div class="secure-badges">
+          <span class="secure-chip">🔒 SSL Encrypted</span>
+          <span class="secure-chip">💳 VISA</span>
+          <span class="secure-chip">💳 Mastercard</span>
+          <span class="secure-chip">💳 PayPal</span>
+        </div>
+        <button type="submit" class="btn btn-green btn-full btn-lg" style="margin-top:20px">
+          PLACE ORDER & PAY →
+        </button>
+      </div>
+    </form>
+
+    <!-- Order Summary -->
+    <div class="checkout-summary">
+      <h3>📋 Order Summary</h3>
+      <div id="checkout-items"><!-- filled by JS --></div>
+      <div class="summary-total-row">
+        <span>Total</span>
+        <span class="summary-total-val" id="checkout-total">$0.00</span>
+      </div>
+      <p class="checkout-note">
+        ✓ Orders begin within 30 minutes of payment confirmation.<br/>
+        ✓ You will receive a confirmation email with booster contact details.<br/>
+        ✓ 7-day money-back guarantee applies to all orders.
+      </p>
+      <div class="secure-badges" style="margin-top:12px">
+        <span class="secure-chip">🔒 Secure Payment</span>
+        <span class="secure-chip">💰 Money-Back</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ PAGE: CONFIRMATION ══ -->
+<div class="page" id="page-confirmation">
+  <div class="confirm-page">
+    <div class="confirm-icon">✅</div>
+    <h1>Order <span style="color:var(--green)">Confirmed!</span></h1>
+    <p>Thank you for your order! Your booster has been assigned and will contact you shortly.</p>
+    <p style="margin-top:8px">Check your email for order details and booster contact information.</p>
+    <div class="order-num">Order ID: <span id="order-number">#AB000000</span></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-top:24px;text-align:left">
+      <div style="font-size:13px;font-weight:800;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">What Happens Next?</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2">
+        <div>📧 Confirmation email sent to your inbox</div>
+        <div>⏱️ Booster assigned within 30 minutes</div>
+        <div>💬 Booster contacts you via Discord / email</div>
+        <div>🎮 Boost begins at your convenience</div>
+        <div>📺 Request live stream link anytime</div>
+      </div>
+    </div>
+    <div class="confirm-next">
+      <button class="btn btn-green" onclick="showPage('home')">BACK TO HOME</button>
+      <button class="btn btn-outline" onclick="showPage('games')">ORDER ANOTHER BOOST</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ FOOTER ══ -->
+<footer>
+  <div class="footer-main">
+    <div class="footer-brand">
+      <div class="logo">
+        <div class="logo-icon">⚔️</div>
+        <div class="logo-text">APEX<span>BOOST</span></div>
+      </div>
+      <p>Professional game boosting services for 12+ titles. Safe, fast, and guaranteed results delivered by top-ranked players worldwide.</p>
+      <div class="footer-social">
+        <div class="social-icon" onclick="showToast('Discord coming soon!','info')">💬</div>
+        <div class="social-icon" onclick="showToast('Twitter/X coming soon!','info')">✕</div>
+        <div class="social-icon" onclick="showToast('Instagram coming soon!','info')">📷</div>
+        <div class="social-icon" onclick="showToast('YouTube coming soon!','info')">▶</div>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Games</h4>
+      <ul>
+        <li><a onclick="openGameDetail('valorant')">Valorant</a></li>
+        <li><a onclick="openGameDetail('lol')">League of Legends</a></li>
+        <li><a onclick="openGameDetail('pubg')">PUBG</a></li>
+        <li><a onclick="openGameDetail('fortnite')">Fortnite</a></li>
+        <li><a onclick="showPage('games')">View All →</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a onclick="showToast('Rank boosting available on game pages','info')">Rank Boost</a></li>
+        <li><a onclick="showToast('Placement matches available','info')">Placement Matches</a></li>
+        <li><a onclick="showToast('Level boosting available','info')">Level Boost</a></li>
+        <li><a onclick="showPage('pricing')">Pricing</a></li>
+        <li><a onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'});showPage('home')">How It Works</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a onclick="showToast('Live chat opening...','info')">Live Chat</a></li>
+        <li><a onclick="showToast('Discord: ApexBoost#0001','info')">Discord</a></li>
+        <li><a onclick="showToast('Email: support@apexboost.gg','info')">Email Us</a></li>
+        <li><a onclick="showPage('pricing')">FAQ</a></li>
+        <li><a onclick="showToast('Refund policy: 7-day guarantee','info')">Refund Policy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 ApexBoost. All rights reserved.</span>
+    <div class="pay-methods">
+      <div class="pay-chip">VISA</div>
+      <div class="pay-chip">MC</div>
+      <div class="pay-chip">PAYPAL</div>
+      <div class="pay-chip">CRYPTO</div>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════ JAVASCRIPT ══ -->
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const GAMES=[
+  {id:"rust",name:"Rust",tag:"Popular",category:"survival",fromPrice:9.99,desc:"Dominate Rust servers with expert boosters. Farm resources, raid bases, and climb server leaderboards.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYTBlMDQiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzNkMWUwNiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzFmMTAwOCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM2MCIgY3k9IjYwIiByPSI5MCIgZmlsbD0iI2M0NWUwYSIgb3BhY2l0eT0iMC4yNSIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTYwIiByPSI3MCIgZmlsbD0iIzhiM2EwMCIgb3BhY2l0eT0iMC4yIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8Y2lyY2xlIGN4PSIzNzAiIGN5PSIxMDgiIHI9IjU1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjNDVlMGEiIHN0cm9rZS13aWR0aD0iOCIgb3BhY2l0eT0iMC4zNSIvPgogIDxjaXJjbGUgY3g9IjM3MCIgY3k9IjEwOCIgcj0iMzgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2M0NWUwYSIgc3Ryb2tlLXdpZHRoPSI1IiBvcGFjaXR5PSIwLjI1Ii8+CiAgPGNpcmNsZSBjeD0iMzcwIiBjeT0iMTA4IiByPSIxOCIgZmlsbD0iIzhiM2EwMCIgb3BhY2l0eT0iMC41Ii8+CiAgPHJlY3QgeD0iMzU2IiB5PSI0OCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjE0IiByeD0iNCIgZmlsbD0iI2M0NWUwYSIgb3BhY2l0eT0iMC40IiB0cmFuc2Zvcm09InJvdGF0ZSgwIDM3MCAxMDgpIi8+CiAgPHJlY3QgeD0iMzU2IiB5PSI0OCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjE0IiByeD0iNCIgZmlsbD0iI2M0NWUwYSIgb3BhY2l0eT0iMC40IiB0cmFuc2Zvcm09InJvdGF0ZSg0NSAzNzAgMTA4KSIvPgogIDxyZWN0IHg9IjM1NiIgeT0iNDgiIHdpZHRoPSIyOCIgaGVpZ2h0PSIxNCIgcng9IjQiIGZpbGw9IiNjNDVlMGEiIG9wYWNpdHk9IjAuNCIgdHJhbnNmb3JtPSJyb3RhdGUoOTAgMzcwIDEwOCkiLz4KICA8cmVjdCB4PSIzNTYiIHk9IjQ4IiB3aWR0aD0iMjgiIGhlaWdodD0iMTQiIHJ4PSI0IiBmaWxsPSIjYzQ1ZTBhIiBvcGFjaXR5PSIwLjQiIHRyYW5zZm9ybT0icm90YXRlKDEzNSAzNzAgMTA4KSIvPgogIDxsaW5lIHgxPSI2MCIgeTE9IjgwIiB4Mj0iMTQwIiB5Mj0iODAiIHN0cm9rZT0iI2UwNzAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iMTAwIiB5MT0iNDAiIHgyPSIxMDAiIHkyPSIxMjAiIHN0cm9rZT0iI2UwNzAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSI4MCIgcj0iMTIiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2UwNzAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8dGV4dCB4PSIzNiIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSI1NiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2UwNzAyMCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjQiPlJVU1Q8L3RleHQ+Cgo8L3N2Zz4="},
+  {id:"sot",name:"Sea of Thieves",tag:"Adventure",category:"adventure",fromPrice:12.99,desc:"Complete tall tales, earn gold, and achieve Pirate Legend status with our seasoned sea dogs.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDBmMWUiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMjA0MCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MTgzMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM4MCIgY3k9IjEwMCIgcj0iMTAwIiBmaWxsPSIjMGE1ZmE4IiBvcGFjaXR5PSIwLjMiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxwYXRoIGQ9Ik0wIDE0MCBRNjAgMTEwIDEyMCAxNDAgUTE4MCAxNzAgMjQwIDE0MCBRMzAwIDExMCAzNjAgMTQwIFE0MjAgMTcwIDQ2MCAxNDAgTDQ2MCAyMTUgTDAgMjE1WiIgZmlsbD0iIzBhNGE4MCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBhdGggZD0iTTAgMTYwIFE4MCAxMzAgMTYwIDE2MCBRMjQwIDE5MCAzMjAgMTYwIFE0MDAgMTMwIDQ2MCAxNjAgTDQ2MCAyMTUgTDAgMjE1WiIgZmlsbD0iIzA2MzY2MCIgb3BhY2l0eT0iMC42Ii8+CiAgPHBhdGggZD0iTTI4MCA4MCBMMzAwIDE0NSBMMzgwIDE0NSBMNDAwIDgwIFoiIGZpbGw9IiMwYTJhNGEiIG9wYWNpdHk9IjAuNyIvPgogIDxsaW5lIHgxPSIzNDAiIHkxPSIzMCIgeDI9IjM0MCIgeTI9IjE0NSIgc3Ryb2tlPSIjYjg4NjBiIiBzdHJva2Utd2lkdGg9IjMiIG9wYWNpdHk9IjAuNiIvPgogIDxwb2x5Z29uIHBvaW50cz0iMzQwLDMyIDM5MCw3MiAzNDAsNzIiIGZpbGw9IiNkNGEwMjAiIG9wYWNpdHk9IjAuNSIvPgogIDxwb2x5Z29uIHBvaW50cz0iMzQwLDMyIDI5MCw2MiAzNDAsNjIiIGZpbGw9IiNkNGEwMjAiIG9wYWNpdHk9IjAuNCIvPgogIDxjaXJjbGUgY3g9IjkwIiBjeT0iMTAwIiByPSI0NSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNGE5ZmQ0IiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMzUiLz4KICA8bGluZSB4MT0iOTAiIHkxPSI1OCIgeDI9IjkwIiB5Mj0iMTQyIiBzdHJva2U9IiM0YTlmZDQiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iNDgiIHkxPSIxMDAiIHgyPSIxMzIiIHkyPSIxMDAiIHN0cm9rZT0iIzRhOWZkNCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNCIvPgogIDxwb2x5Z29uIHBvaW50cz0iOTAsNTggODUsNzUgOTUsNzUiIGZpbGw9IiNkNGEwMjAiIG9wYWNpdHk9IjAuNiIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjNGE5ZmQ0IiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+U0VBIE9GIFRISUVWRVM8L3RleHQ+Cgo8L3N2Zz4="},
+  {id:"ffxiv",name:"Final Fantasy XIV",tag:"MMORPG",category:"mmorpg",fromPrice:14.99,desc:"Level up characters fast, complete Savage raids, and unlock exclusive gear and rare mounts.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwZTA0MTgiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzFlMGEzNiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBhMGUyNCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiM3YTIwYzgiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMTQwIiByPSI3MCIgZmlsbD0iIzNhMDg4MCIgb3BhY2l0eT0iMC4yNSIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPHBvbHlnb24gcG9pbnRzPSIyMzAsMjAgMjQ1LDYwIDI5MCw2MCAyNTUsODUgMjY4LDEzMCAyMzAsMTA1IDE5MiwxMzAgMjA1LDg1IDE3MCw2MCAyMTUsNjAiIGZpbGw9IiNmZmQ3MDAiIG9wYWNpdHk9IjAuMjIiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjEwOCIgcj0iNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2EwNTBlMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuMzUiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSIxMDgiIHI9IjQwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmQ3MDAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDxwb2x5Z29uIHBvaW50cz0iOTAsNDAgMTAwLDcwIDEzMCw3MCAxMDcsODggMTE2LDExOCA5MCwxMDAgNjQsMTE4IDczLDg4IDUwLDcwIDgwLDcwIiBmaWxsPSIjYzA2MGYwIiBvcGFjaXR5PSIwLjMiLz4KICA8cG9seWdvbiBwb2ludHM9IjM3MCw2MCAzNzgsODQgNDAzLDg0IDM4Myw5OCAzOTEsMTIyIDM3MCwxMDggMzQ5LDEyMiAzNTcsOTggMzM3LDg0IDM2Miw4NCIgZmlsbD0iI2ZmZDcwMCIgb3BhY2l0eT0iMC4yNSIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjMwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjYzA2MGYwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+RklOQUwgRkFOVEFTWSBYSVY8L3RleHQ+Cgo8L3N2Zz4="},
+  {id:"paladins",name:"Paladins",tag:"FPS",category:"fps",fromPrice:8.99,desc:"Rank up from Bronze to Grandmaster with our experienced Paladins Immortal+ boosters.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMyMDAwMDgiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzRhMDAxOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzE4MDAxMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSI5MCIgZmlsbD0iI2MwMDAzMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8cGF0aCBkPSJNMjMwIDIwIEwyNzAgMjAgTDI5MCA1MCBMMjcwIDgwIEwyMzAgODAgTDIxMCA1MCBaIiBmaWxsPSIjYzAwMDMwIiBvcGFjaXR5PSIwLjMiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxwYXRoIGQ9Ik0yMzAgMjAgTDI3MCAyMCBMMjkwIDUwIEwyNzAgODAgTDIzMCA4MCBMMjEwIDUwIFoiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmNDA2MCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjQiLz4KICA8Y2lyY2xlIGN4PSIyNTAiIGN5PSI1MCIgcj0iMTUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmNDA2MCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iMjUwIiB5MT0iMzUiIHgyPSIyNTAiIHkyPSI2NSIgc3Ryb2tlPSIjZmY0MDYwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC40Ii8+CiAgPGxpbmUgeDE9IjIzNSIgeTE9IjUwIiB4Mj0iMjY1IiB5Mj0iNTAiIHN0cm9rZT0iI2ZmNDA2MCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNCIvPgogIDxwYXRoIGQ9Ik04MCAzMCBMMTAwIDMwIEwxMTAgNTAgTDEwMCAxMTAgTDgwIDExMCBMNzAgNTAgWiIgZmlsbD0iIzhiMDAyMCIgb3BhY2l0eT0iMC40Ii8+CiAgPHJlY3QgeD0iNjAiIHk9IjEwOCIgd2lkdGg9IjYwIiBoZWlnaHQ9IjgiIHJ4PSIyIiBmaWxsPSIjYzAwMDMwIiBvcGFjaXR5PSIwLjM1Ii8+CiAgPHRleHQgeD0iMzAiIHk9IjE1NSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDQiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiNmZjQwNjAiIG9wYWNpdHk9IjAuMTgiIGxldHRlci1zcGFjaW5nPSIzIj5QQUxBRElOUzwvdGV4dD4KCjwvc3ZnPg=="},
+  {id:"bf2042",name:"Battlefield 2042",tag:"FPS",category:"fps",fromPrice:11.99,desc:"Unlock all operators, max weapon mastery, and dominate ranked play in Battlefield 2042.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNjBlMDQiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBlMWUwOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA4MTIwOCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjcwIiByPSI5MCIgZmlsbD0iIzQwNjAyMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8bGluZSB4MT0iMCIgeTE9IjUwIiB4Mj0iNDYwIiB5Mj0iNTAiIHN0cm9rZT0iIzgwYzA0MCIgc3Ryb2tlLXdpZHRoPSIwLjUiIG9wYWNpdHk9IjAuMiIvPgogIDxsaW5lIHgxPSIwIiB5MT0iMTAwIiB4Mj0iNDYwIiB5Mj0iMTAwIiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMC41IiBvcGFjaXR5PSIwLjIiLz4KICA8bGluZSB4MT0iMCIgeTE9IjE1MCIgeDI9IjQ2MCIgeTI9IjE1MCIgc3Ryb2tlPSIjODBjMDQwIiBzdHJva2Utd2lkdGg9IjAuNSIgb3BhY2l0eT0iMC4yIi8+CiAgPHBhdGggZD0iTTI4MCA4MCBMMzYwIDYwIEw0MDAgNzUgTDM4MCAxMDAgTDMwMCAxMTAgWiIgZmlsbD0iIzIwNDAxMCIgb3BhY2l0eT0iMC42Ii8+CiAgPGNpcmNsZSBjeD0iMzIwIiBjeT0iNTUiIHI9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iMzIwIiB5MT0iMzgiIHgyPSIzMjAiIHkyPSI3MiIgc3Ryb2tlPSIjODBjMDQwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuNCIvPgogIDxsaW5lIHgxPSIzMDMiIHkxPSI1NSIgeDI9IjMzNyIgeTI9IjU1IiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC40Ii8+CiAgPGNpcmNsZSBjeD0iMzIwIiBjeT0iNTUiIHI9IjQiIGZpbGw9IiM4MGMwNDAiIG9wYWNpdHk9IjAuNSIvPgogIDxwYXRoIGQ9Ik04MCA2MCBMNjAgMTAwIEwxMDAgMTEwIEwxMzAgODUgWiIgZmlsbD0iIzIwNDAxMCIgb3BhY2l0eT0iMC41Ii8+CiAgPGxpbmUgeDE9Ijk1IiB5MT0iNjAiIHgyPSI5NSIgeTI9IjI1IiBzdHJva2U9IiM4MGMwNDAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC40Ii8+CiAgPHRleHQgeD0iMzAiIHk9IjE1NSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMzgiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiM4MGMwNDAiIG9wYWNpdHk9IjAuMTgiIGxldHRlci1zcGFjaW5nPSIzIj5CRiAyMDQyPC90ZXh0PgoKPC9zdmc+"},
+  {id:"freefire",name:"Free Fire",tag:"Mobile",category:"mobile",fromPrice:6.99,desc:"Rank push in Free Fire with pro players — from Bronze to Heroic in record time.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxYTA0MjgiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzJlMDg1MCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzE4MDQzMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjgwIiByPSI5MCIgZmlsbD0iIzgwMjBjMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8Y2lyY2xlIGN4PSIxMDAiIGN5PSIxNDAiIHI9IjcwIiBmaWxsPSIjYzA1MDEwIiBvcGFjaXR5PSIwLjIiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxwYXRoIGQ9Ik0yMzAgMTIwIEwyMTggODUgTDIyNSA5MCBMMjMwIDcwIEwyMzUgOTAgTDI0MiA4NSBaIiBmaWxsPSIjZmY2MDIwIiBvcGFjaXR5PSIwLjYiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxwYXRoIGQ9Ik0yMzAgMTIwIEwyMTUgODAgTDIyMiA4NiBMMjMwIDY1IEwyMzggODYgTDI0NSA4MCBaIiBmaWxsPSIjZmY4MDQwIiBvcGFjaXR5PSIwLjQiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSIxNDAiIHI9IjUwIiBmaWxsPSJub25lIiBzdHJva2U9IiNmZjYwMjAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjMiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSIxNDAiIHI9IjM1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjMDQwYTAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDxwYXRoIGQ9Ik04MCA0MCBMMTAwIDIwIEwxMDAgNTAgTDEyMCAzMCBMMTEwIDYwIEwxMzAgNTAgTDExNSA4MCBMOTUgNzAgTDEwMCA5MCBMODAgODAgTDYwIDkwIEw2NSA3MCBMNDUgODAgTDYwIDUwIEw0MCA2MCBMNTAgMzAgTDcwIDUwIEw3MCAyMCBaIiBmaWxsPSIjYzA0MGEwIiBvcGFjaXR5PSIwLjE1IiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8dGV4dCB4PSIzMCIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSIzOCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2MwNDBhMCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjMiPkZSRUUgRklSRTwvdGV4dD4KCjwvc3ZnPg=="},
+  {id:"pubg",name:"PUBG",tag:"Battle Royale",category:"br",fromPrice:9.99,desc:"Increase your PUBG rank, improve K/D ratio, and get that chicken dinner streak going.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMxMjBlMDIiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzJlMjIwNiIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzFhMTYwNCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiNjOGEwMjAiIG9wYWNpdHk9IjAuMjUiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxyZWN0IHg9IjE5MCIgeT0iNDAiIHdpZHRoPSI4MCIgaGVpZ2h0PSI2MCIgcng9IjQiIGZpbGw9IiM0YTNhMTAiIG9wYWNpdHk9IjAuNSIvPgogIDxsaW5lIHgxPSIxOTAiIHkxPSI0MCIgeDI9IjI3MCIgeTI9IjQwIiBzdHJva2U9IiNjOGEwMjAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC40Ii8+CiAgPGxpbmUgeDE9IjE5MCIgeTE9IjEwMCIgeDI9IjI3MCIgeTI9IjEwMCIgc3Ryb2tlPSIjYzhhMDIwIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNCIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjcwIiByPSIxMiIgZmlsbD0iI2M4YTAyMCIgb3BhY2l0eT0iMC4zIi8+CiAgPHBhdGggZD0iTTIxMCAxMDAgTDIxNSAxMzAgTDI0NSAxMzAgTDI1MCAxMDAgWiIgZmlsbD0iIzRhM2ExMCIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTQ1IiByPSIzMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzhhMDIwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4zIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTQ1IiByPSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzhhMDIwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMiIvPgogIDxwYXRoIGQ9Ik04MCAzMCBMOTAgMTAgTDkwIDUwIEw4MCAzMCBaIiBmaWxsPSIjYzhhMDIwIiBvcGFjaXR5PSIwLjUiLz4KICA8bGluZSB4MT0iOTAiIHkxPSIzMCIgeDI9IjkwIiB5Mj0iOTAiIHN0cm9rZT0iI2M4YTAyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjQiLz4KICA8dGV4dCB4PSIzMCIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSI1NiIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2M4YTAyMCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjQiPlBVQkc8L3RleHQ+Cgo8L3N2Zz4="},
+  {id:"codm",name:"CoD Mobile",tag:"Mobile",category:"mobile",fromPrice:7.99,desc:"Reach Legendary rank in CoD Mobile BR and Multiplayer with Top 500 global players.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDA4MTAiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMTAyMCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MGMxOCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjEwMCIgcj0iMTAwIiBmaWxsPSIjMjAzMDgwIiBvcGFjaXR5PSIwLjMiIGZpbHRlcj0idXJsKCNibHVyKSIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjEwMCIgcj0iNjUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzQwNjBjMCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8bGluZSB4MT0iMTQ1IiB5MT0iMTAwIiB4Mj0iMzE1IiB5Mj0iMTAwIiBzdHJva2U9IiM0MDYwYzAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iMjMwIiB5MT0iMTUiIHgyPSIyMzAiIHkyPSIxODUiIHN0cm9rZT0iIzQwNjBjMCIgc3Ryb2tlLXdpZHRoPSIxLjUiIG9wYWNpdHk9IjAuNCIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjEwMCIgcj0iMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzgwOTBlMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjUiLz4KICA8cGF0aCBkPSJNMTk1IDY1IEwyMTUgNTAgTDIzMCA2MCBMMjQ1IDUwIEwyNjUgNjUgTDI2MCA4NSBMMjMwIDgwIEwyMDAgODUgWiIgZmlsbD0iIzIwMzA4MCIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iNjAiIHI9IjgiIGZpbGw9IiM0MDYwYzAiIG9wYWNpdHk9IjAuNCIvPgogIDxsaW5lIHgxPSI4NSIgeTE9IjY1IiB4Mj0iMTc1IiB5Mj0iODUiIHN0cm9rZT0iIzQwNjBjMCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8bGluZSB4MT0iMjg1IiB5MT0iODUiIHgyPSIzODAiIHkyPSI3MCIgc3Ryb2tlPSIjNDA2MGMwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMyIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjM4IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjNDA2MGMwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMyI+Q09EIE1PQklMRTwvdGV4dD4KCjwvc3ZnPg=="},
+  {id:"coc",name:"Clash of Clans",tag:"Strategy",category:"strategy",fromPrice:5.99,desc:"Reach Legends League, max your Town Hall, and destroy enemies in Clan War League.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDBlMDIiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMWUwNCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MTIwNCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjIzMCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiMyYTYwMTAiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPHJlY3QgeD0iMTcwIiB5PSI2MCIgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMDAiIHJ4PSI0IiBmaWxsPSIjMWEzYTA4IiBvcGFjaXR5PSIwLjUiLz4KICA8cmVjdCB4PSIxNjAiIHk9IjQwIiB3aWR0aD0iMzAiIGhlaWdodD0iNjAiIHJ4PSIzIiBmaWxsPSIjMWEzYTA4IiBvcGFjaXR5PSIwLjYiLz4KICA8cmVjdCB4PSIyNzAiIHk9IjQwIiB3aWR0aD0iMzAiIGhlaWdodD0iNjAiIHJ4PSIzIiBmaWxsPSIjMWEzYTA4IiBvcGFjaXR5PSIwLjYiLz4KICA8cmVjdCB4PSIxNjUiIHk9IjM1IiB3aWR0aD0iMjAiIGhlaWdodD0iMTIiIHJ4PSIyIiBmaWxsPSIjMmE1MDEwIiBvcGFjaXR5PSIwLjciLz4KICA8cmVjdCB4PSIyNzUiIHk9IjM1IiB3aWR0aD0iMjAiIGhlaWdodD0iMTIiIHJ4PSIyIiBmaWxsPSIjMmE1MDEwIiBvcGFjaXR5PSIwLjciLz4KICA8cmVjdCB4PSIxODUiIHk9IjU1IiB3aWR0aD0iMTEwIiBoZWlnaHQ9IjEyIiByeD0iMiIgZmlsbD0iIzJhNTAxMCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBhdGggZD0iTTE5NSA5MCBMMjI1IDcwIEwyNTUgOTAgTDI1NSAxNjAgTDE5NSAxNjAgWiIgZmlsbD0iIzRhODAyMCIgb3BhY2l0eT0iMC4yNSIgZmlsdGVyPSJ1cmwoI2dsb3cpIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTAwIiByPSIyMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjODBjMDQwIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuNCIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjMwIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjODBjMDQwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+Q0xBU0ggT0YgQ0xBTlM8L3RleHQ+Cgo8L3N2Zz4="},
+  {id:"fortnite",name:"Fortnite",tag:"Battle Royale",category:"br",fromPrice:8.99,desc:"Win games, complete all Battle Pass challenges, and unlock exclusive cosmetics fast.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNjBjMWUiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBlMWEzYSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzBhMTAzMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM1MCIgY3k9IjcwIiByPSIxMDAiIGZpbGw9IiMxYTQwYzAiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTA4IiByPSI4MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDA3MGUwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC4zIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iMTA4IiByPSI1NSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjA1MGIwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMjUiLz4KICA8cGF0aCBkPSJNMjIwIDIwIEwyNDAgMjAgTDI1MCA1MCBMMjQ1IDgwIEwyMzUgNjUgTDIzMCA4NSBMMjI1IDY1IEwyMTUgODAgTDIxMCA1MCBaIiBmaWxsPSIjNjA4MGYwIiBvcGFjaXR5PSIwLjQiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxjaXJjbGUgY3g9IjgwIiBjeT0iNDAiIHI9IjIiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjciLz4KICA8Y2lyY2xlIGN4PSIxMzAiIGN5PSIyNSIgcj0iMS41IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC41Ii8+CiAgPGNpcmNsZSBjeD0iMTcwIiBjeT0iMzUiIHI9IjIuNSIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNiIvPgogIDxjaXJjbGUgY3g9IjMwMCIgY3k9IjIwIiByPSIyIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC43Ii8+CiAgPGNpcmNsZSBjeD0iMzgwIiBjeT0iMzUiIHI9IjEuNSIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuNSIvPgogIDxjaXJjbGUgY3g9IjQyMCIgY3k9IjE1IiByPSIyIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC42Ii8+CiAgPHRleHQgeD0iMzAiIHk9IjE1NSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDQiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiM2MDgwZjAiIG9wYWNpdHk9IjAuMTgiIGxldHRlci1zcGFjaW5nPSIzIj5GT1JUTklURTwvdGV4dD4KCjwvc3ZnPg=="},
+  {id:"valorant",name:"Valorant",tag:"Hot",category:"fps",fromPrice:12.99,desc:"Climb from Iron to Radiant with certified Immortal+ Valorant boosters. Safe and discreet.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwZTA0MDQiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzIwMDgwOCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzEwMDQwNiIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSI5MCIgZmlsbD0iI2MwMTAyMCIgb3BhY2l0eT0iMC4zIiBmaWx0ZXI9InVybCgjYmx1cikiLz4KICA8cGF0aCBkPSJNMjAwIDMwIEwyMzAgMTAwIEwyNjAgMzAgTDI4MCAzMCBMMjMwIDEzMCBMMTgwIDMwIFoiIGZpbGw9IiNmZjIwNDAiIG9wYWNpdHk9IjAuMzUiIGZpbHRlcj0idXJsKCNnbG93KSIvPgogIDxwYXRoIGQ9Ik0yMDAgMzAgTDIzMCAxMDAgTDI2MCAzMCBMMjgwIDMwIEwyMzAgMTMwIEwxODAgMzAgWiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmY0MDYwIiBzdHJva2Utd2lkdGg9IjEuNSIgb3BhY2l0eT0iMC40Ii8+CiAgPGxpbmUgeDE9IjE1NSIgeTE9IjkwIiB4Mj0iMzA1IiB5Mj0iOTAiIHN0cm9rZT0iI2ZmMjA0MCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjMiLz4KICA8Y2lyY2xlIGN4PSIyMzAiIGN5PSI5MCIgcj0iNiIgZmlsbD0iI2ZmMjA0MCIgb3BhY2l0eT0iMC41Ii8+CiAgPHBvbHlnb24gcG9pbnRzPSIzNjAsNTAgMzgwLDEwMCAzNDAsMTAwIiBmaWxsPSIjYzAxMDIwIiBvcGFjaXR5PSIwLjMiLz4KICA8cG9seWdvbiBwb2ludHM9IjM3MCw2MCAzODUsOTUgMzU1LDk1IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZjQwNjAiIHN0cm9rZS13aWR0aD0iMS41IiBvcGFjaXR5PSIwLjQiLz4KICA8dGV4dCB4PSIzMCIgeT0iMTU1IiBmb250LWZhbWlseT0iQXJpYWwgQmxhY2ssc2Fucy1zZXJpZiIgZm9udC1zaXplPSI0NCIgZm9udC13ZWlnaHQ9IjkwMCIgZmlsbD0iI2ZmNDA2MCIgb3BhY2l0eT0iMC4xOCIgbGV0dGVyLXNwYWNpbmc9IjMiPlZBTE9SQU5UPC90ZXh0PgoKPC9zdmc+"},
+  {id:"lol",name:"League of Legends",tag:"MOBA",category:"moba",fromPrice:9.99,desc:"Reach your dream rank in LoL — from Iron to Challenger with Grandmaster+ players.",img:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NjAiIGhlaWdodD0iMjE1IiB2aWV3Qm94PSIwIDAgNDYwIDIxNSI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwNDA4MGUiLz48c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iIzBhMTQzMCIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzA2MGMyMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOCIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0iZ2xvdyI+PGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMyIgcmVzdWx0PSJiIi8+PGZlTWVyZ2U+PGZlTWVyZ2VOb2RlIGluPSJiIi8+PGZlTWVyZ2VOb2RlIGluPSJTb3VyY2VHcmFwaGljIi8+PC9mZU1lcmdlPjwvZmlsdGVyPgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNDYwIiBoZWlnaHQ9IjIxNSIgZmlsbD0idXJsKCNnKSIvPgogIAogIDxjaXJjbGUgY3g9IjM0MCIgY3k9IjgwIiByPSIxMDAiIGZpbGw9IiMwYTMwYTAiIG9wYWNpdHk9IjAuMyIgZmlsdGVyPSJ1cmwoI2JsdXIpIi8+CiAgPGNpcmNsZSBjeD0iMjMwIiBjeT0iOTUiIHI9IjY1IiBmaWxsPSJub25lIiBzdHJva2U9IiNjOGE4MjAiIHN0cm9rZS13aWR0aD0iMiIgb3BhY2l0eT0iMC4zNSIvPgogIDxjaXJjbGUgY3g9IjIzMCIgY3k9Ijk1IiByPSI0OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDA4MGMwIiBzdHJva2Utd2lkdGg9IjEiIG9wYWNpdHk9IjAuMjUiLz4KICA8cGF0aCBkPSJNMjE1IDQwIEwyMzAgNTUgTDI0NSA0MCBMMjU1IDU1IEwyNDUgNzAgTDIzMCA2MCBMMjE1IDcwIEwyMDUgNTUgWiIgZmlsbD0iI2M4YTgyMCIgb3BhY2l0eT0iMC40IiBmaWx0ZXI9InVybCgjZ2xvdykiLz4KICA8bGluZSB4MT0iMjMwIiB5MT0iNTUiIHgyPSIyMzAiIHkyPSIxNDAiIHN0cm9rZT0iI2M4YTgyMCIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjMiLz4KICA8bGluZSB4MT0iMTkwIiB5MT0iNzUiIHgyPSIyNzAiIHkyPSIxMTUiIHN0cm9rZT0iIzQwODBjMCIgc3Ryb2tlLXdpZHRoPSIxIiBvcGFjaXR5PSIwLjI1Ii8+CiAgPGxpbmUgeDE9IjI3MCIgeTE9Ijc1IiB4Mj0iMTkwIiB5Mj0iMTE1IiBzdHJva2U9IiM0MDgwYzAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDxjaXJjbGUgY3g9IjkwIiBjeT0iODAiIHI9IjMwIiBmaWxsPSJub25lIiBzdHJva2U9IiNjOGE4MjAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4zIi8+CiAgPGNpcmNsZSBjeD0iMzcwIiBjeT0iODAiIHI9IjI1IiBmaWxsPSJub25lIiBzdHJva2U9IiM0MDgwYzAiIHN0cm9rZS13aWR0aD0iMSIgb3BhY2l0eT0iMC4yNSIvPgogIDx0ZXh0IHg9IjMwIiB5PSIxNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjNDA4MGMwIiBvcGFjaXR5PSIwLjE4IiBsZXR0ZXItc3BhY2luZz0iMiI+TEVBR1VFIE9GIExFR0VORFM8L3RleHQ+Cgo8L3N2Zz4="}
+];
+const PACKAGES=[
+  {name:"Starter",mult:1.0,features:["5 guaranteed wins","Solo boost only","Standard priority","72h delivery","24/7 chat support"]},
+  {name:"Pro",mult:2.0,features:["15 guaranteed wins","Solo or Duo boost","High priority","24h delivery","Live stream option","VPN protection"]},
+  {name:"Elite",mult:3.5,features:["Unlimited wins","Duo boost included","Top priority","12h express delivery","HD live stream","VPN + offline mode","Dedicated booster","Money-back guarantee"]}
+];
+
+let cart = [];
+let currentGame = null;
+
+// ── Router ────────────────────────────────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const p = document.getElementById('page-' + id);
+  if (p) p.classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+  // Update nav active
+  document.querySelectorAll('.nav-link[data-page]').forEach(a => {
+    a.classList.toggle('active', a.dataset.page === id);
+  });
+  closeAllDropdowns();
+}
+
+// ── Dropdowns ─────────────────────────────────────────────────────────────────
+function toggleDropdown(id) {
+  const dd = document.getElementById(id).parentElement;
+  const isOpen = dd.classList.contains('open');
+  closeAllDropdowns();
+  if (!isOpen) dd.classList.add('open');
+}
+function closeAllDropdowns() {
+  document.querySelectorAll('.has-dropdown').forEach(d => d.classList.remove('open'));
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.has-dropdown')) closeAllDropdowns();
+});
+
+function setLang(flag, code) {
+  document.getElementById('lang-label').innerHTML = flag + ' ' + code + ' <span class="nav-arrow">▾</span>';
+  closeAllDropdowns();
+  showToast('Language set to ' + code, 'success');
+}
+function setCurr(sym, code) {
+  document.getElementById('curr-label').innerHTML = sym + ' ' + code + ' <span class="nav-arrow">▾</span>';
+  closeAllDropdowns();
+  showToast('Currency set to ' + code, 'success');
+}
+
+// ── Cart ──────────────────────────────────────────────────────────────────────
+function addToCart(gameId, pkgName, price) {
+  const game = GAMES.find(g => g.id === gameId);
+  const existing = cart.find(i => i.gameId === gameId && i.pkg === pkgName);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({ gameId, gameName: game.name, gameImg: game.img, pkg: pkgName, price: parseFloat(price), qty: 1 });
+  }
+  updateCartBadge();
+  renderCartItems();
+  showToast(game.name + ' · ' + pkgName + ' added to cart! 🛒', 'success');
+}
+function removeFromCart(i) {
+  cart.splice(i, 1);
+  updateCartBadge();
+  renderCartItems();
+}
+function updateQty(i, d) {
+  cart[i].qty = Math.max(1, cart[i].qty + d);
+  updateCartBadge();
+  renderCartItems();
+}
+function cartTotal() {
+  return cart.reduce((s, i) => s + i.price * i.qty, 0);
+}
+function updateCartBadge() {
+  const total = cart.reduce((s, i) => s + i.qty, 0);
+  document.getElementById('cart-badge').textContent = total;
+}
+
+// ── Cart Drawer ───────────────────────────────────────────────────────────────
+function openCartDrawer() {
+  renderCartItems();
+  document.getElementById('cart-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('active');
+}
+function closeCartDrawer() {
+  document.getElementById('cart-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('active');
+}
+function renderCartItems() {
+  const c = document.getElementById('cart-items');
+  const f = document.getElementById('cart-footer');
+  if (cart.length === 0) {
+    c.innerHTML = '<div class="cart-empty"><div style="font-size:48px;margin-bottom:12px">🛒</div><p>Your cart is empty</p><button class="btn btn-green btn-sm" style="margin-top:12px" onclick="closeCartDrawer();showPage(\'games\')">Browse Games</button></div>';
+    f.style.display = 'none';
+    return;
+  }
+  f.style.display = 'block';
+  c.innerHTML = cart.map((item, i) => `
+    <div class="cart-item">
+      <img class="cart-item-img" src="${item.gameImg}" alt="${item.gameName}"/>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.gameName}</div>
+        <div class="cart-item-pkg">${item.pkg} Package</div>
+        <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
+      </div>
+      <div class="cart-item-actions">
+        <div class="qty-control">
+          <button onclick="updateQty(${i},-1)">−</button>
+          <span>${item.qty}</span>
+          <button onclick="updateQty(${i},1)">+</button>
+        </div>
+        <button class="remove-btn" onclick="removeFromCart(${i})" title="Remove">✕</button>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('cart-total').textContent = '$' + cartTotal().toFixed(2);
+}
+
+// ── Game Detail ───────────────────────────────────────────────────────────────
+function openGameDetail(gameId) {
+  currentGame = GAMES.find(g => g.id === gameId);
+  if (!currentGame) return;
+  document.getElementById('detail-img').src = currentGame.img;
+  document.getElementById('detail-name').textContent = currentGame.name;
+  document.getElementById('detail-desc').textContent = currentGame.desc;
+  document.getElementById('detail-why').textContent =
+    'Our boosters for ' + currentGame.name + ' are all ' + currentGame.tag +
+    '-tier verified players with thousands of games of experience. They maintain a strict win-rate policy and guarantee your order will be completed safely and discreetly.';
+
+  const grid = document.getElementById('packages-grid');
+  grid.innerHTML = PACKAGES.map((pkg, i) => {
+    const price = (currentGame.fromPrice * pkg.mult).toFixed(2);
+    return `
+      <div class="pkg-card ${i===1?'featured':''}" id="pkg-${i}">
+        ${i===1?'<div class="pkg-most-pop">MOST POPULAR</div>':''}
+        <div class="pkg-header">
+          <div class="pkg-name">${pkg.name}</div>
+          <div class="pkg-price"><sup>$</sup>${price}</div>
+        </div>
+        <ul class="pkg-features">
+          ${pkg.features.map(f=>`<li>${f}</li>`).join('')}
+        </ul>
+        <button class="btn ${i===1?'btn-green':'btn-outline'} btn-full"
+          onclick="addToCart('${currentGame.id}','${pkg.name}',${price});event.stopPropagation()">
+          ADD TO CART
+        </button>
+      </div>`;
+  }).join('');
+
+  showPage('game-detail');
+  closeAllDropdowns();
+}
+
+// ── Filter Catalog ────────────────────────────────────────────────────────────
+function filterGames(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.catalog-card').forEach(card => {
+    const show = cat === 'all' || card.dataset.category === cat;
+    card.style.display = show ? '' : 'none';
+  });
+}
+
+// ── Checkout ──────────────────────────────────────────────────────────────────
+function goToCheckout() {
+  if (cart.length === 0) { showToast('Your cart is empty!', 'error'); return; }
+  closeCartDrawer();
+  renderCheckoutSummary();
+  showPage('checkout');
+}
+function renderCheckoutSummary() {
+  document.getElementById('checkout-items').innerHTML = cart.map(item => `
+    <div class="summary-item">
+      <span>${item.gameName} — ${item.pkg} ×${item.qty}</span>
+      <span>$${(item.price * item.qty).toFixed(2)}</span>
+    </div>
+  `).join('');
+  document.getElementById('checkout-total').textContent = '$' + cartTotal().toFixed(2);
+}
+function submitOrder(e) {
+  e.preventDefault();
+  const required = ['order-fname','order-lname','order-email','order-ign','order-name','card-number','card-expiry','card-cvv'];
+  let ok = true;
+  required.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el.value.trim()) { el.classList.add('error'); ok = false; }
+    else el.classList.remove('error');
+  });
+  if (!ok) { showToast('Please fill in all required fields.', 'error'); return; }
+  const orderNum = 'AB' + Math.floor(100000 + Math.random() * 900000);
+  document.getElementById('order-number').textContent = '#' + orderNum;
+  cart = [];
+  updateCartBadge();
+  showPage('confirmation');
+}
+
+// ── Card input formatting ──────────────────────────────────────────────────────
+function formatCard(el) {
+  let v = el.value.replace(/\D/g,'').substring(0,16);
+  el.value = v.match(/.{1,4}/g)?.join(' ') || v;
+}
+function formatExpiry(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2,4);
+  el.value = v;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── Games Dropdown Fill ───────────────────────────────────────────────────────
+function buildGamesDropdown() {
+  const grid = document.getElementById('games-dd-grid');
+  grid.innerHTML = GAMES.map(g => `
+    <div class="games-dd-item" onclick="openGameDetail('${g.id}');closeAllDropdowns()">
+      <img class="games-dd-img" src="${g.img}" alt="${g.name}"/>
+      <span class="games-dd-name">${g.name}</span>
+    </div>
+  `).join('');
+}
+
+// ── Hero Canvas Particle Network ──────────────────────────────────────────────
+function initCanvas() {
+  const canvas = document.getElementById('hero-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, pts = [];
+
+  function resize() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < 70; i++) {
+    pts.push({
+      x: Math.random() * (W || 1200),
+      y: Math.random() * (H || 420),
+      vx: (Math.random() - .5) * .4,
+      vy: (Math.random() - .5) * .4,
+      r: Math.random() * 2 + 1
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    // Move
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
+    });
+    // Lines
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i+1; j < pts.length; j++) {
+        const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < 130) {
+          ctx.beginPath();
+          ctx.moveTo(pts[i].x, pts[i].y);
+          ctx.lineTo(pts[j].x, pts[j].y);
+          ctx.strokeStyle = `rgba(57,211,83,${(1 - d/130) * .25})`;
+          ctx.lineWidth = .8;
+          ctx.stroke();
+        }
+      }
+    }
+    // Dots
+    pts.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(57,211,83,.55)';
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  buildGamesDropdown();
+  renderCartItems();
+  updateCartBadge();
+  initCanvas();
+});
+</script>
+</body>
+</html>
